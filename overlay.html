@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Telemetry Overlay</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            padding: 15px;
+            width: 450px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #444;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        .status {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: #e74c3c;
+        }
+        .status.connected { background: #2ecc71; }
+        .score-box {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: #111;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .team { text-align: center; }
+        .team-a { color: #3498db; }
+        .team-b { color: #e74c3c; }
+        .kills { font-size: 28px; font-weight: bold; }
+        .gold { font-size: 12px; opacity: 0.8; }
+        .timer { font-size: 20px; font-weight: bold; color: #f1c40f; }
+        .players-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .player-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            border-radius: 4px;
+            background: #222;
+            font-size: 13px;
+        }
+        .player-row.blue { border-left: 4px solid #3498db; }
+        .player-row.red { border-left: 4px solid #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h3>Live Telemetry Overlay</h3>
+        <div id="connection-status" class="status">Disconnected</div>
+    </div>
+
+    <div class="score-box">
+        <div class="team team-a">
+            <div>TEAM A</div>
+            <div id="teamA-kills" class="kills">0</div>
+            <div id="teamA-gold" class="gold">💰 0</div>
+        </div>
+        <div id="game-timer" class="timer">00:00</div>
+        <div class="team team-b">
+            <div>TEAM B</div>
+            <div id="teamB-kills" class="kills">0</div>
+            <div id="teamB-gold" class="gold">💰 0</div>
+        </div>
+    </div>
+
+    <h4>Players List</h4>
+    <div id="players-list" class="players-list">
+        <div style="font-size:12px; opacity:0.6; text-align:center; padding:10px;">Menunggu data...</div>
+    </div>
+
+    <script>
+        const wsUrl = "ws://localhost:8080";
+        const statusEl = document.getElementById("connection-status");
+        let ws;
+
+        function connect() {
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                statusEl.innerText = "Connected";
+                statusEl.classList.add("connected");
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    let message = JSON.parse(event.data);
+                    // server.py kadang forward payload sebagai string JSON ganda
+                    if (typeof message === "string") message = JSON.parse(message);
+                    // Cek jika data dikirim dalam wrapper { type: "mlbb_live_data", payload: ... }
+                    const payload = message.payload || message;
+                    if (typeof payload === "string") return;
+                    const fmtTime = (s) => {
+                        s = Math.max(0, Math.floor(s || 0));
+                        return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+                    };
+
+                    if (payload && payload.Battle) {
+                        const battle = payload.Battle;
+                        document.getElementById("game-timer").innerText = fmtTime(battle.waktuPertandingan);
+                        document.getElementById("teamA-kills").innerText = battle.blueTeamKill ?? 0;
+                        document.getElementById("teamA-gold").innerText = "💰 " + (battle.blueTeamGold ?? 0);
+                        document.getElementById("teamB-kills").innerText = battle.redTeamKill ?? 0;
+                        document.getElementById("teamB-gold").innerText = "💰 " + (battle.redTeamGold ?? 0);
+                    }
+
+                    if (payload && payload.players) {
+                        const listEl = document.getElementById("players-list");
+                        listEl.innerHTML = "";
+                        payload.players.forEach(p => {
+                            const row = document.createElement("div");
+                            row.className = `player-row ${p.team === 1 ? 'blue' : 'red'}`;
+                            row.innerHTML = `
+                                <span>${p.name || 'Player'} (Hero: ${p.heroid ?? p.SelHeroID})</span>
+                                <span>Pos: ${p.ipos} | Road: ${p.role} | Lv.${p.level ?? 0} KDA ${p.kill ?? 0}/${p.dead ?? 0}/${p.assist ?? 0}</span>
+                            `;
+                            listEl.appendChild(row);
+                        });
+                    }
+                } catch (err) {
+                    console.error("Error parsing message:", err);
+                }
+            };
+
+            ws.onclose = () => {
+                statusEl.innerText = "Disconnected";
+                statusEl.classList.remove("connected");
+                setTimeout(connect, 2000);
+            };
+
+            ws.onerror = () => {
+                ws.close();
+            };
+        }
+
+        connect();
+    </script>
+</body>
+</html>
