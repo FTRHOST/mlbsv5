@@ -2,6 +2,7 @@ import { startStealthBootstrap, type MappedClasses } from "./core/loader.js";
 import { setupDraftHooks } from "./hooks/draft.js";
 import { setupMatchHooks } from "./hooks/match.js";
 import { setupPlayerHooks } from "./hooks/player.js";
+import { setupVersionHook } from "./hooks/version.js";
 import { debugLog } from "./utils/logger.js";
 import { startTelemetryBroadcaster } from "./utils/scheduler.js";
 
@@ -9,6 +10,7 @@ debugLog("Bootstrap", "Memulai Frida Il2Cpp Stealth Agent...");
 
 startStealthBootstrap((classes: MappedClasses) => {
   setupDraftHooks(classes.kUIRankHero);
+  setupVersionHook(classes.kGameMain);
   setupMatchHooks(classes.kEndCtrl, classes.kTimerBase, classes.kLogicFightData, classes.kLogicManager);
   setupPlayerHooks({
     kSystemData: classes.kSystemData,

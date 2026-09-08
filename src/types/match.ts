@@ -1,5 +1,6 @@
 export interface BattleData {
   battleState: number | string;
+  versionInGame: string;
   winCamp: number;
   waktuPertandingan: number;
   blueTeamKill: number;

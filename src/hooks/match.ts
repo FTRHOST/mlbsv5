@@ -1,6 +1,7 @@
 import { getCachedUtf8String, getOffset, il2cppApi } from "../core/api.js";
 import type { BattleData } from "../types/match.js";
 import { debugLog } from "../utils/logger.js";
+import { getVersionInGame } from "./version.js";
 
 export let globalFightDataPtr: NativePointer | null = null;
 export let getMatchTimeMs: NativeFunction<number, []> | null = null;
@@ -144,6 +145,7 @@ export function extractMatchData(
 ): BattleData {
   const defaultBattle: BattleData = {
     battleState: state,
+    versionInGame: getVersionInGame(),
     winCamp: currentWinCamp,
     waktuPertandingan: 0,
     blueTeamKill: 0,
@@ -236,6 +238,7 @@ export function extractMatchData(
 
     return {
       battleState: state,
+      versionInGame: getVersionInGame(),
       winCamp: currentWinCamp,
       waktuPertandingan: Math.floor(timeMs / 1000),
       blueTeamKill: readVal("m_CampAKill", false),
