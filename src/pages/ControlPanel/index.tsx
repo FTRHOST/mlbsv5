@@ -85,6 +85,8 @@ function downscaleImage(file: File, maxWidth = 324): Promise<string> {
 export default function ControlPanel() {
   const [activeOverlay, setActiveOverlay] = useState<"none" | "emblem" | "item">("none");
   const [turtleActive, setTurtleActive] = useState(false);
+  const [lordActive, setLordActive] = useState(false);
+
   const [channel, setChannel] = useState<BroadcastChannel | null>(null);
   const [testIpos, setTestIpos] = useState<number>(1);
   const [testLevel, setTestLevel] = useState<number>(4);
@@ -144,6 +146,12 @@ export default function ControlPanel() {
     setTurtleActive(true);
     channel?.postMessage({ type: "TRIGGER_TURTLE" });
     setTimeout(() => setTurtleActive(false), 3000);
+  };
+
+  const triggerLord = () => {
+    setLordActive(true);
+    channel?.postMessage({ type: "TRIGGER_LORD" });
+    setTimeout(() => setLordActive(false), 3000);
   };
 
   const triggerLevelUpTest = () => {
@@ -328,18 +336,30 @@ export default function ControlPanel() {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-300">
             2. Trigger Notifikasi Game
           </h2>
-          <div className="flex items-center gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <button
               onClick={triggerTurtle}
               disabled={turtleActive}
-              className={`flex-1 py-3 px-4 rounded-lg font-bold text-sm border transition flex items-center justify-center gap-2 ${
+              className={`py-3 px-4 rounded-lg font-bold text-sm border transition flex items-center justify-center gap-2 ${
                 turtleActive
                   ? "bg-emerald-900/60 border-emerald-500 text-emerald-200"
                   : "bg-neutral-800 border-neutral-700 text-neutral-200 hover:bg-neutral-700"
               }`}
             >
               <span>🐢</span>
-              <span>{turtleActive ? "Notifikasi Turtle Aktif..." : "Trigger Notifikasi Turtle"}</span>
+              <span>{turtleActive ? "Notif Turtle..." : "Trigger Turtle"}</span>
+            </button>
+            <button
+              onClick={triggerLord}
+              disabled={lordActive}
+              className={`py-3 px-4 rounded-lg font-bold text-sm border transition flex items-center justify-center gap-2 ${
+                lordActive
+                  ? "bg-sky-900/60 border-sky-500 text-sky-200"
+                  : "bg-neutral-800 border-neutral-700 text-neutral-200 hover:bg-neutral-700"
+              }`}
+            >
+              <span>👹</span>
+              <span>{lordActive ? "Notif Lord..." : "Trigger Lord"}</span>
             </button>
           </div>
         </div>

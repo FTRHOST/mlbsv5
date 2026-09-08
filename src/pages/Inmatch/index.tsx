@@ -19,7 +19,11 @@ import imgStandarTalent2 from "./06d737d2c805471942ea7a79c5e75bd478f98a4d.png";
 import imgCoreTalent from "./fe562fe25dff16e4aa5d63ec2d04415406d00021.png";
 import imgEmblem from "./59d46961759939fc1bea0b23cbb194a4b09bbcc4.png";
 import imgImageTurtle from "./2f9693547869a15a4eabaf9f1e311238f5494886.png";
+import imgImageLordSpawn from "./lord-spawn.png";
 import imgLogo5 from "./a24eed50adb610341c6db1253a563b8615827a2e.png";
+
+// Asset gambar Lord (nanti dapat diganti jika asset lord khusus sudah ditambahkan)
+const imgImageLord = imgImageLordSpawn;
 
 
 function UserInfoBackground() {
@@ -3588,28 +3592,86 @@ function EmblemBuild() {
 
 function LogoTurtle() {
   return (
-    <motion.div className="absolute contents left-[1595px] top-[139px]" data-name="logo turtle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}>
-      <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Inter:Black',sans-serif] font-black h-[143px] justify-center leading-none left-[1757px] not-italic text-transparent bg-clip-text bg-gradient-to-b from-[#FFE57F] via-[#E8D367] to-[#D69345] text-[32px] tracking-[4px] text-center top-[245.5px] drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] w-[324px] z-10">
-        <p className="mb-1 uppercase">TURTLE</p>
-        <p className="uppercase">SPAWNED</p>
+    <div className="relative w-[416px] h-[324px]" data-name="logo turtle">
+      <div className="title absolute left-[54px] top-[130px] w-[324px] h-[143px] flex items-center justify-center text-center text-[#fce98a] font-['Koulen:Regular',sans-serif] text-[64px] leading-[61px] tracking-[0.2em] font-normal z-0">
+        TURTLE
+        <br />
+        SPAWNED
       </div>
-      <div className="absolute h-[229px] left-[1652px] top-[139px] w-[200px] z-20 pointer-events-none" data-name="image turtle">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <img alt="" className="absolute h-[177.29%] left-[-50.5%] max-w-none top-[-42.36%] w-[203%]" src={imgImageTurtle} />
-        </div>
+      <img className="image-turtle absolute left-0 top-0 w-[416px] h-[324px] object-cover aspect-[416/324] z-10 pointer-events-none" src={imgImageTurtle} alt="" />
+      <div
+        className="title2 absolute left-[54px] top-[130px] w-[324px] h-[143px] flex items-center justify-center text-center text-transparent font-['Koulen:Regular',sans-serif] text-[64px] leading-[61px] tracking-[0.2em] font-normal z-20 pointer-events-none"
+        style={{ WebkitTextStroke: "1px #e8d367" }}
+      >
+        TURTLE
+        <br />
+        SPAWNED
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 function TurtleSpawnedNotification() {
   return (
-    <div className="absolute contents left-[1595px] top-[139px]" data-name="Turtle Spawned Notification">
-      <motion.div className="absolute bg-[#533920] border-l-4 border-[#E8D367] shadow-2xl h-[143px] left-[1595px] top-[174px] w-[325px]" data-name="Container" initial={{ x: 352 }} animate={{ x: 0 }} transition={{ duration: 0.5, ease: "easeOut" }} />
-      <LogoTurtle />
+    <div className="turtle-spawned-notification absolute left-[1504px] top-[44px] w-[416px] h-[324px] pointer-events-none" data-name="Turtle Spawned Notification">
+      <motion.div
+        className="container absolute bg-[#533920] w-[325px] h-[143px] left-[54px] top-[130px] shadow-2xl"
+        initial={{ x: 352 }}
+        animate={{ x: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+      >
+        <LogoTurtle />
+      </motion.div>
     </div>
   );
 }
+
+function LogoLord() {
+  return (
+    <div className="relative w-[416px] h-[324px]" data-name="logo lord">
+      <div className="title absolute left-[54px] top-[130px] w-[324px] h-[143px] flex items-center justify-center text-center text-[#fce98a] font-['Koulen:Regular',sans-serif] text-[64px] leading-[61px] tracking-[0.2em] font-normal z-0">
+        LORD
+        <br />
+        SPAWNED
+      </div>
+      <img className="image-lord absolute left-0 top-0 w-[416px] h-[324px] object-cover aspect-[416/324] z-10 pointer-events-none" src={imgImageLord} alt="" />
+      <div
+        className="title2 absolute left-[54px] top-[130px] w-[324px] h-[143px] flex items-center justify-center text-center text-transparent font-['Koulen:Regular',sans-serif] text-[64px] leading-[61px] tracking-[0.2em] font-normal z-20 pointer-events-none"
+        style={{ WebkitTextStroke: "1px #e8d367" }}
+      >
+        LORD
+        <br />
+        SPAWNED
+      </div>
+    </div>
+  );
+}
+
+function LordSpawnedNotification() {
+  return (
+    <div className="lord-spawned-notification absolute left-[1504px] top-[44px] w-[416px] h-[324px] pointer-events-none" data-name="Lord Spawned Notification">
+      <motion.div
+        className="container absolute bg-[#533920] w-[325px] h-[143px] left-[54px] top-[130px] shadow-2xl"
+        initial={{ x: 352 }}
+        animate={{ x: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+      >
+        <LogoLord />
+      </motion.div>
+    </div>
+  );
+}
+
 
 function Container92() {
   return (
@@ -4462,6 +4524,36 @@ function Container90() {
 export default function Inmatch() {
   const [activeOverlay, setActiveOverlay] = useState<"none" | "emblem" | "item">("none");
   const [showTurtle, setShowTurtle] = useState(false);
+  const [showLord, setShowLord] = useState(false);
+
+  const roomData = useRoomData();
+  const prevTurtleAlive = useRef<boolean | null>(null);
+  const prevLordAlive = useRef<boolean | null>(null);
+
+  // Monitor live data updates for turtleAlive & lordAlive changes (false -> true)
+  useEffect(() => {
+    const battle = roomData?.battle || roomData?.Battle;
+    if (!battle) return;
+
+    const turtleAlive = battle.turtleAlive;
+    if (typeof turtleAlive === "boolean") {
+      if (prevTurtleAlive.current === false && turtleAlive === true) {
+        setShowTurtle(true);
+        setTimeout(() => setShowTurtle(false), 5000);
+      }
+      prevTurtleAlive.current = turtleAlive;
+    }
+
+    const lordAlive = battle.lordAlive;
+    if (typeof lordAlive === "boolean") {
+      if (prevLordAlive.current === false && lordAlive === true) {
+        setShowLord(true);
+        setTimeout(() => setShowLord(false), 5000);
+      }
+      prevLordAlive.current = lordAlive;
+    }
+  }, [roomData]);
+
   const [playerStats, setPlayerStats] = useState<{ visible: boolean; metric: PlayerStatsMetric }>(() => {
     try {
       const raw = localStorage.getItem(PLAYER_STATS_KEY);
@@ -4542,6 +4634,9 @@ export default function Inmatch() {
       } else if (event.data?.type === "TRIGGER_TURTLE") {
         setShowTurtle(true);
         setTimeout(() => setShowTurtle(false), 5000);
+      } else if (event.data?.type === "TRIGGER_LORD") {
+        setShowLord(true);
+        setTimeout(() => setShowLord(false), 5000);
       } else if (event.data?.type === "SET_SIDE_ITEM_VISIBLE") {
         const v = event.data.visible !== false;
         try {
@@ -4671,6 +4766,21 @@ export default function Inmatch() {
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
             <TurtleSpawnedNotification />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Lord Spawn Notification Trigger */}
+      <AnimatePresence>
+        {showLord && (
+          <motion.div
+            key="lord"
+            initial={{ opacity: 0, x: 300 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 300 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
+            <LordSpawnedNotification />
           </motion.div>
         )}
       </AnimatePresence>
