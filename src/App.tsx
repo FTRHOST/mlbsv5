@@ -137,7 +137,7 @@ export default function App() {
   return (
     <div className="w-screen h-screen flex flex-col bg-black overflow-hidden">
       <BrowserRouter>
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 overflow-y-auto">
           <AnimatedRoutes />
         </div>
       </BrowserRouter>
