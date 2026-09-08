@@ -1,5 +1,6 @@
 import { getCachedUtf8String, getMethodNative, getMethodNativeHierarchy, getOffset, il2cppApi, readCsharpString } from "../core/api.js";
 import { playerBanMap } from "./draft.js";
+import { getMatchTimeMs } from "./match.js";
 import type { EmblemSkill, PlayerData } from "../types/player.js";
 
 let roomDataOffsets: Record<string, number> = {};
@@ -12,6 +13,296 @@ let getInfoFunc: NativeFunction<any, any> | null = null;
 let getEquipListFunc: NativeFunction<any, any> | null = null;
 
 const persistentInstPtr = Memory.alloc(Process.pointerSize);
+
+// Cache offset rantai ultimate (learned + cooldown) agar resolve sekali saja.
+let ultOffsets: Record<string, number> = {
+  m_OwnSkillComp: -1,
+  m_SkillComp: -1,
+  m_BigSkillID: -1,
+  m_BigSkillIDs: -1,
+  m_BigSkillData: -1,
+  m_bLearned: -1,
+  m_CoolDownComp: -1,
+  m_DicCoolInfo: -1,
+  m_isCoolDown: -1,
+  uiStartTime: -1,
+  uiCoolTime: -1,
+};
+let isUltSubOffsetsResolved = false;
+
+function readIntList(listPtr: NativePointer, maxItems: number): number[] {
+  const out: number[] = [];
+  if (!listPtr || listPtr.isNull()) return out;
+  try {
+    const count = listPtr.add(Process.pointerSize === 8 ? 0x18 : 0x0c).readInt();
+    const itemsArray = listPtr.add(Process.pointerSize === 8 ? 0x10 : 0x08).readPointer();
+    if (!itemsArray || itemsArray.isNull() || count <= 0 || count > 64) return out;
+    const header = Process.pointerSize === 8 ? 0x20 : 0x10;
+    const n = Math.min(count, maxItems);
+    for (let i = 0; i < n; i++) {
+      try {
+        out.push(itemsArray.add(header + i * 4).readInt());
+      } catch (e) {}
+    }
+  } catch (e) {}
+  return out;
+}
+
+function resolveUltSubOffsets(
+  ownSkillCompPtr: NativePointer | null,
+  skillCompPtr: NativePointer | null,
+  cdCompPtr: NativePointer | null,
+  cdDataSample: NativePointer | null,
+): void {
+  if (isUltSubOffsetsResolved || !il2cppApi.object_get_class) return;
+  try {
+    if (ownSkillCompPtr && !ownSkillCompPtr.isNull()) {
+      const kOwn = il2cppApi.object_get_class(ownSkillCompPtr);
+      if (kOwn && !kOwn.isNull()) {
+        if (ultOffsets.m_BigSkillID! <= 0) ultOffsets.m_BigSkillID = getOffset(kOwn, "m_BigSkillID");
+        if (ultOffsets.m_BigSkillIDs! <= 0) ultOffsets.m_BigSkillIDs = getOffset(kOwn, "m_BigSkillIDs");
+        if (ultOffsets.m_BigSkillData! <= 0) ultOffsets.m_BigSkillData = getOffset(kOwn, "m_BigSkillData");
+        if (ultOffsets.m_BigSkillData! > 0) {
+          try {
+            const bigData = ownSkillCompPtr.add(ultOffsets.m_BigSkillData!).readPointer();
+            if (bigData && !bigData.isNull()) {
+              const kBigData = il2cppApi.object_get_class(bigData);
+              if (kBigData && !kBigData.isNull() && ultOffsets.m_bLearned! <= 0) {
+                ultOffsets.m_bLearned = getOffset(kBigData, "m_bLearned");
+              }
+            }
+          } catch (e) {}
+        }
+      }
+    }
+    if (skillCompPtr && !skillCompPtr.isNull()) {
+      const kSkill = il2cppApi.object_get_class(skillCompPtr);
+      if (kSkill && !kSkill.isNull() && ultOffsets.m_CoolDownComp! <= 0) {
+        ultOffsets.m_CoolDownComp = getOffset(kSkill, "m_CoolDownComp");
+      }
+    }
+    if (cdCompPtr && !cdCompPtr.isNull()) {
+      const kCd = il2cppApi.object_get_class(cdCompPtr);
+      if (kCd && !kCd.isNull() && ultOffsets.m_DicCoolInfo! <= 0) {
+        ultOffsets.m_DicCoolInfo = getOffset(kCd, "m_DicCoolInfo");
+      }
+    }
+    if (cdDataSample && !cdDataSample.isNull()) {
+      const kData = il2cppApi.object_get_class(cdDataSample);
+      if (kData && !kData.isNull()) {
+        if (ultOffsets.m_isCoolDown! <= 0) ultOffsets.m_isCoolDown = getOffset(kData, "m_isCoolDown");
+        if (ultOffsets.uiStartTime! <= 0) ultOffsets.uiStartTime = getOffset(kData, "uiStartTime");
+        if (ultOffsets.uiCoolTime! <= 0) ultOffsets.uiCoolTime = getOffset(kData, "uiCoolTime");
+      }
+    }
+    if (
+      ultOffsets.m_BigSkillID! > 0 &&
+      ultOffsets.m_CoolDownComp! > 0 &&
+      ultOffsets.m_DicCoolInfo! > 0 &&
+      ultOffsets.m_isCoolDown! > 0
+    ) {
+      isUltSubOffsetsResolved = true;
+    }
+  } catch (e) {}
+}
+
+// true = ulti sudah dipelajari DAN off-cooldown (aturan ANY-ready untuk multi-ulti).
+// Sumber learned utama: OwnSkillData.m_bLearned. greenLightCanUse hanya fallback
+// bila info learned tak tersedia (green terbukti bisa 0 walau sudah learned).
+function isUltReady(logicPlayerPtr: NativePointer): boolean {
+  try {
+    if (!logicPlayerPtr || logicPlayerPtr.isNull()) return false;
+
+    const offOwn = ultOffsets.m_OwnSkillComp ?? -1;
+    const offSkill = ultOffsets.m_SkillComp ?? -1;
+    if (offOwn <= 0 || offSkill <= 0) return false;
+
+    let ownPtr: NativePointer | null = null;
+    let skillPtr: NativePointer | null = null;
+    try {
+      ownPtr = logicPlayerPtr.add(offOwn).readPointer();
+      skillPtr = logicPlayerPtr.add(offSkill).readPointer();
+    } catch (e) {
+      return false;
+    }
+    if (!ownPtr || ownPtr.isNull() || !skillPtr || skillPtr.isNull()) return false;
+
+    // Resolve sub-offset (m_BigSkillID, m_CoolDownComp, dst.) segera setelah pointer
+    // comp tersedia. Tanpa ini kandidat selalu kosong dan hasil selalu false.
+    if (!isUltSubOffsetsResolved) {
+      resolveUltSubOffsets(ownPtr, skillPtr, null, null);
+    }
+
+    // Kumpulkan kandidat big skill ID (utama + varian). ANY-ready.
+    const candidates = new Set<number>();
+    try {
+      const offBig = ultOffsets.m_BigSkillID ?? -1;
+      if (offBig > 0) {
+        const bigId = ownPtr.add(offBig).readInt();
+        if (bigId > 0) candidates.add(bigId);
+      }
+    } catch (e) {}
+    try {
+      const offBigs = ultOffsets.m_BigSkillIDs ?? -1;
+      if (offBigs > 0) {
+        const listPtr = ownPtr.add(offBigs).readPointer();
+        for (const id of readIntList(listPtr, 8)) {
+          if (id > 0) candidates.add(id);
+        }
+      }
+    } catch (e) {}
+    if (candidates.size === 0) return false;
+
+    // Gate learned: m_bLearned pada m_BigSkillData. Tidak learned -> false.
+    // greenLightCanUse hanya dipakai bila m_bLearned tak bisa dibaca.
+    let learnedInfo = false;
+    try {
+      const offBigData = ultOffsets.m_BigSkillData ?? -1;
+      const offLearned = ultOffsets.m_bLearned ?? -1;
+      if (offBigData > 0 && offLearned > 0) {
+        const bigData = ownPtr.add(offBigData).readPointer();
+        if (bigData && !bigData.isNull()) {
+          learnedInfo = true;
+          if (bigData.add(offLearned).readU8() === 0) return false;
+        }
+      }
+    } catch (e) {}
+    if (!learnedInfo) {
+      const offGreen = logicPlayerOffsets.greenLightCanUse ?? -1;
+      if (offGreen > 0) {
+        try {
+          learnedInfo = true;
+          if (logicPlayerPtr.add(offGreen).readU8() === 0) return false;
+        } catch (e) {}
+      }
+    }
+    if (!learnedInfo) return false;
+
+    // Ambil CoolDownComp + dictionary cooldown.
+    let cdPtr: NativePointer | null = null;
+    try {
+      let offCd = ultOffsets.m_CoolDownComp ?? -1;
+      if (offCd <= 0) {
+        resolveUltSubOffsets(ownPtr, skillPtr, null, null);
+        offCd = ultOffsets.m_CoolDownComp ?? -1;
+        if (offCd <= 0) return false;
+      }
+      cdPtr = skillPtr.add(offCd).readPointer();
+    } catch (e) {
+      return false;
+    }
+    if (!cdPtr || cdPtr.isNull()) return false;
+
+    let dictPtr: NativePointer | null = null;
+    try {
+      let offDict = ultOffsets.m_DicCoolInfo ?? -1;
+      if (offDict <= 0) {
+        resolveUltSubOffsets(ownPtr, skillPtr, cdPtr, null);
+        offDict = ultOffsets.m_DicCoolInfo ?? -1;
+        if (offDict <= 0) return false;
+      }
+      dictPtr = cdPtr.add(offDict).readPointer();
+    } catch (e) {
+      return false;
+    }
+    // Tidak ada dictionary = tidak ada cooldown tercatat = ready.
+    if (!dictPtr || dictPtr.isNull()) return true;
+
+    // Scan Dictionary<int, CoolDownData>: entry 24-byte, key int +8, value ptr +16.
+    try {
+      const entriesPtr = dictPtr.add(Process.pointerSize === 8 ? 0x18 : 0x0c).readPointer();
+      let count = dictPtr.add(Process.pointerSize === 8 ? 0x20 : 0x10).readInt();
+      if (!entriesPtr || entriesPtr.isNull()) return true;
+      if (count < 0 || count > 128) return true;
+      if (count === 0) return true;
+      const header = Process.pointerSize === 8 ? 0x20 : 0x10;
+      const offCdFlag = ultOffsets.m_isCoolDown ?? -1;
+      const scanCount = Math.min(count, 64);
+      // Kumpulkan value sample untuk resolve offset bila belum ada.
+      if (offCdFlag <= 0) {
+        for (let i = 0; i < scanCount; i++) {
+          try {
+            const v = entriesPtr.add(header + i * 24).add(16).readPointer();
+            if (v && !v.isNull()) {
+              resolveUltSubOffsets(ownPtr, skillPtr, cdPtr, v);
+              break;
+            }
+          } catch (e) {}
+        }
+      }
+      const cachedFlagOff = ultOffsets.m_isCoolDown ?? -1;
+      const flagOff = cachedFlagOff > 0 ? cachedFlagOff : 0x20;
+      const cachedStartOff = ultOffsets.uiStartTime ?? -1;
+      const startOff = cachedStartOff > 0 ? cachedStartOff : 0x1c;
+      const cachedCoolOff = ultOffsets.uiCoolTime ?? -1;
+      const coolOff = cachedCoolOff > 0 ? cachedCoolOff : 0x14;
+      // Waktu pertandingan kini (ms). Flag m_isCoolDown terbukti tak selalu
+      // ter-set saat cooldown berjalan, jadi hitung juga dari uiStartTime+uiCoolTime.
+      const readNow = (): number => {
+        try {
+          if (getMatchTimeMs) return Number((getMatchTimeMs as any)());
+        } catch (e) {}
+        return -1;
+      };
+      const isEntryCooling = (vPtr: NativePointer): boolean => {
+        try {
+          if (!vPtr || vPtr.isNull()) return false;
+          if (vPtr.add(flagOff > 0 ? flagOff : 0x20).readU8() !== 0) return true;
+          const now = readNow();
+          if (now < 0) return false;
+          const start = vPtr.add(startOff > 0 ? startOff : 0x1c).readU32();
+          const cool = vPtr.add(coolOff > 0 ? coolOff : 0x14).readU32();
+          return cool > 0 && start + cool > (now as number);
+        } catch (e) {
+          return false;
+        }
+      };
+      // Dictionary hidup dan bisa berubah saat game thread update; baca ulang
+      // segar tiap attempt agar satu bacaan robek tak menghasilkan true sesaat.
+      for (const spellId of candidates) {
+        let confirmedReady = false;
+        for (let attempt = 0; attempt < 2 && !confirmedReady; attempt++) {
+          let vPtr: NativePointer | null = null;
+          try {
+            const ePtr = dictPtr.add(Process.pointerSize === 8 ? 0x18 : 0x0c).readPointer();
+            const cnt = dictPtr.add(Process.pointerSize === 8 ? 0x20 : 0x10).readInt();
+            if (ePtr && !ePtr.isNull() && cnt > 0 && cnt <= 128) {
+              const n = Math.min(cnt, 64);
+              for (let i = 0; i < n; i++) {
+                try {
+                  const entry = ePtr.add(header + i * 24);
+                  if (entry.add(8).readInt() !== spellId) continue;
+                  const v = entry.add(16).readPointer();
+                  if (v && !v.isNull()) vPtr = v;
+                  break;
+                } catch (e) {}
+              }
+            }
+          } catch (e) {}
+          // Tanpa entry = tidak cooldown. Konfirmasi sekali lagi sebelum
+          // menyatakan siap agar resize dictionary sesaat tak jadi false-negative.
+          if (!vPtr || vPtr.isNull()) {
+            if (attempt === 0) continue;
+            return true;
+          }
+          // Entry ada tapi tak cooling: baca ulang sekali untuk konfirmasi.
+          if (!isEntryCooling(vPtr)) {
+            if (attempt === 0) continue;
+            confirmedReady = true;
+          } else {
+            break;
+          }
+        }
+        if (confirmedReady) return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  } catch (e) {
+    return false;
+  }
+}
 
 // Normalisasi iPos RoomData ke slot global 1..10.
 // Mode vs-AI memakai penomoran per-camp 0..4 (0 = pemain pertama,
@@ -379,6 +670,13 @@ export function extractPlayerData(
                     let offSynFightData = getOffset(kLogicPlayer, "m_SynFightData");
                     if (offSynFightData <= 0) offSynFightData = 0xa50;
 
+                    let offOwnSkill = getOffset(kLogicPlayer, "m_OwnSkillComp");
+                    if (offOwnSkill <= 0) offOwnSkill = 0x510;
+                    let offSkillComp = getOffset(kLogicPlayer, "m_SkillComp");
+                    if (offSkillComp <= 0) offSkillComp = 0x4f0;
+                    ultOffsets.m_OwnSkillComp = offOwnSkill;
+                    ultOffsets.m_SkillComp = offSkillComp;
+
                     logicPlayerOffsets = {
                       m_Hp: getOffset(kLogicPlayer, "m_Hp"),
                       m_HpMax: getOffset(kLogicPlayer, "m_HpMax"),
@@ -678,13 +976,13 @@ export function extractPlayerData(
                   const offHpMax = logicPlayerOffsets.m_HpMax ?? -1;
                   const offLvl = logicPlayerOffsets.m_Level ?? -1;
                   const offDeadSpan = logicPlayerOffsets.m_uDeadSpanTime ?? -1;
-                  const offUlt = logicPlayerOffsets.greenLightCanUse ?? -1;
 
                   if (offHp > 0) targetPlayer.hp = logicPlayerPtr.add(offHp).readInt();
                   if (offHpMax > 0) targetPlayer.maxHp = logicPlayerPtr.add(offHpMax).readInt();
                   if (offLvl > 0) targetPlayer.level = logicPlayerPtr.add(offLvl).readInt();
                   if (offDeadSpan > 0) targetPlayer.deathTime = logicPlayerPtr.add(offDeadSpan).readInt();
-                  if (offUlt > 0) targetPlayer.ultActive = logicPlayerPtr.add(offUlt).readU8() !== 0;
+                  // ultActive = ulti sudah dipelajari DAN off-cooldown (bukan sekadar greenLight).
+                  targetPlayer.ultActive = isUltReady(logicPlayerPtr);
 
                   // Gold, Damage Dealt, Damage Taken
                   const offTotalGold = logicPlayerOffsets._totalGold ?? -1;
