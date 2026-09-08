@@ -2672,9 +2672,9 @@ function PlayerStatsOverlay({ metric }: { metric: PlayerStatsMetric }) {
     <motion.div
       className="absolute right-0 top-[178px] w-[367px] z-50 flex flex-col bg-white overflow-hidden"
       data-name="Player Stats"
-      initial={{ clipPath: "inset(0% 100% 0% 0%)", opacity: 1 }}
+      initial={{ clipPath: "inset(0% 0% 0% 100%)", opacity: 1 }}
       animate={{ clipPath: "inset(0% 0% 0% 0%)", opacity: 1 }}
-      exit={{ clipPath: "inset(0% 100% 0% 0%)", opacity: 1 }}
+      exit={{ clipPath: "inset(0% 0% 0% 100%)", opacity: 1 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
       <div className="flex items-center justify-center py-[7px]" data-name="Stats Title">
