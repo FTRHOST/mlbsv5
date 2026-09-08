@@ -1178,6 +1178,8 @@ function SingleBluePlayerSideCard({ ipos }: { ipos: number }) {
   const role = Number(player?.role) || 0;
   const levelUp = useLevelUpNotif({ ipos, level, roomData });
   const showSideItem = useSideItemVisible();
+  const deathTime = Number(player?.deathTime) || 0;
+  const isDead = deathTime !== 0;
 
   const validEquips = Array.isArray(player?.equips)
     ? player.equips.map(Number).filter((id: number) => id > 0)
@@ -1216,7 +1218,16 @@ function SingleBluePlayerSideCard({ ipos }: { ipos: number }) {
           <div className="content-stretch flex flex-col gap-[4px] items-center leading-[0] relative shrink-0 w-[52px]" data-name="Container">
             <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid place-items-start relative shrink-0" data-name="Container">
               <div className="col-1 ml-0 mt-0 relative row-1 size-[52px] rounded-full overflow-hidden">
-                <HeroIcon heroId={heroId} fallback={imgEllipse3} size={52} />
+                <div className={`absolute inset-0${isDead ? " grayscale" : ""}`}>
+                  <HeroIcon heroId={heroId} fallback={imgEllipse3} size={52} />
+                </div>
+                {isDead && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60" data-name="Death Timer">
+                    <p className="font-['Inter:Bold',sans-serif] font-bold text-white text-[20px] leading-none m-0">
+                      {Math.ceil(deathTime)}
+                    </p>
+                  </div>
+                )}
               </div>
               <div className="col-1 ml-0 mt-[4px] relative row-1 size-[11px]">
                 <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 11 11">
@@ -1936,6 +1947,8 @@ function SingleRedPlayerSideCard({ ipos }: { ipos: number }) {
   const role = Number(player?.role) || 0;
   const levelUp = useLevelUpNotif({ ipos, level, roomData });
   const showSideItem = useSideItemVisible();
+  const deathTime = Number(player?.deathTime) || 0;
+  const isDead = deathTime !== 0;
 
   const validEquips = Array.isArray(player?.equips)
     ? player.equips.map(Number).filter((id: number) => id > 0)
@@ -1988,7 +2001,16 @@ function SingleRedPlayerSideCard({ ipos }: { ipos: number }) {
           <div className="content-stretch flex flex-col gap-[4px] items-center leading-[0] relative shrink-0 w-[52px]" data-name="Container">
             <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid place-items-start relative shrink-0" data-name="Container">
               <div className="col-1 ml-0 mt-0 relative row-1 size-[52px] rounded-full overflow-hidden">
-                <HeroIcon heroId={heroId} fallback={imgEllipse3} size={52} />
+                <div className={`absolute inset-0${isDead ? " grayscale" : ""}`}>
+                  <HeroIcon heroId={heroId} fallback={imgEllipse3} size={52} />
+                </div>
+                {isDead && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60" data-name="Death Timer">
+                    <p className="font-['Inter:Bold',sans-serif] font-bold text-white text-[20px] leading-none m-0">
+                      {Math.ceil(deathTime)}
+                    </p>
+                  </div>
+                )}
               </div>
               <div className="col-1 ml-0 mt-[4px] relative row-1 size-[11px]">
                 <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 11 11">
@@ -2682,7 +2704,7 @@ function PlayerStatsOverlay({ metric }: { metric: PlayerStatsMetric }) {
           {PLAYER_STATS_TITLES[metric]}
         </p>
       </div>
-      <div className="flex flex-col items-center px-[7px] pb-[12px]" data-name="Player Stats List">
+      <div className="flex flex-col items-center px-[7px] pb-[41px]" data-name="Player Stats List">
         {rows.length === 0 && (
           <p className="font-['Inter:Medium',sans-serif] text-black/60 text-[14px] py-6 m-0">
             Menunggu live data…
