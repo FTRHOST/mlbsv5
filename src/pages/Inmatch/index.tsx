@@ -878,6 +878,182 @@ function DynamicRedUserInfo({ kill, dead, assist, level }: { kill: number; dead:
   );
 }
 
+function getBattleTimeSeconds(roomData: any): number {
+  const battle = roomData?.battle ?? roomData?.Battle;
+  const raw = battle?.waktuPertandingan;
+  if (typeof raw !== "number" || Number.isNaN(raw)) return 0;
+  // Handle both seconds (e.g. 269) and milliseconds (e.g. 269000)
+  return raw < 100000 ? Math.max(0, Math.floor(raw)) : Math.max(0, Math.floor(raw / 1000));
+}
+
+function formatGameTime(totalSeconds: number): string {
+  const s = Math.max(0, Math.floor(totalSeconds || 0));
+  const mm = Math.floor(s / 60).toString().padStart(2, "0");
+  const ss = (s % 60).toString().padStart(2, "0");
+  return `${mm}:${ss}`;
+}
+
+function LevelUpOverlay({
+  playerName,
+  level,
+  role,
+  timeLabel,
+  team,
+}: {
+  playerName: string;
+  level: number;
+  role: number;
+  timeLabel: string;
+  team: "blue" | "red";
+}) {
+  const roleSrc = role > 0 ? `/assets/lane/${role}.png` : imgLogo4;
+  const isBlue = team === "blue";
+  return (
+    <motion.div
+      className="absolute inset-0 z-20 flex overflow-hidden"
+      data-name="Level Up Notif"
+      initial={{ opacity: 0, x: isBlue ? -24 : 24 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: isBlue ? -24 : 24 }}
+      transition={{ duration: 0.45, ease: "easeInOut" }}
+    >
+      {/* Role strip mirrored: blue right, red left */}
+      {!isBlue && (
+        <div className="bg-[#533920] w-[48px] shrink-0 h-full flex items-center justify-center relative" data-name="container-role">
+          <img alt="" className="size-[28px] object-cover" src={roleSrc} />
+        </div>
+      )}
+      <div className="flex-1 bg-[#d69345] relative flex flex-col min-w-0" data-name="notif-up-level">
+        <div className="flex-1 flex flex-col items-center justify-center px-2 min-h-0">
+          <p className="font-['Koulen:Regular',sans-serif] text-white text-[30px] leading-[30px] tracking-wide text-center truncate w-full m-0">
+            LEVEL {level}
+          </p>
+          <p className="font-['Inter:Extra_Bold',sans-serif] font-extrabold text-white text-[14px] leading-none text-center truncate w-full m-0 mt-[2px]">
+            {playerName}
+          </p>
+        </div>
+        <div className="bg-[#e8d367] h-[17px] shrink-0 flex items-center justify-center" data-name="record-waktu">
+          <p className="font-['Inter:Bold',sans-serif] font-bold text-black text-[13px] leading-none text-center m-0">
+            Pada {timeLabel}
+          </p>
+        </div>
+      </div>
+      {isBlue && (
+        <div className="bg-[#533920] w-[48px] shrink-0 h-full flex items-center justify-center relative" data-name="container-role">
+          <img alt="" className="size-[28px] object-cover" src={roleSrc} />
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+function useLevelUpNotif({
+  ipos,
+  level,
+  roomData,
+}: {
+  ipos: number;
+  level: number;
+  roomData: any;
+}) {
+  const [notif, setNotif] = useState<{ level: number; timeLabel: string } | null>(null);
+  const prevLevelRef = useRef<number | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showFor3s = (lv: number, timeLabel: string) => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setNotif({ level: lv, timeLabel });
+    timeoutRef.current = setTimeout(() => setNotif(null), 3000);
+  };
+
+  // Auto: only on reaching level 4 or 15 (transition-based, not on first load)
+  useEffect(() => {
+    const prev = prevLevelRef.current;
+    if (prev === null) {
+      prevLevelRef.current = level;
+      return;
+    }
+    if (level !== prev) {
+      prevLevelRef.current = level;
+      if (level === 4 || level === 15) {
+        const secs = getBattleTimeSeconds(roomData);
+        showFor3s(level, formatGameTime(secs));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [level]);
+
+  // Manual test trigger from Control Panel (test only)
+  useEffect(() => {
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel("mlbs_overlay_control");
+      bc.onmessage = (event) => {
+        if (event.data?.type === "TRIGGER_LEVELUP" && Number(event.data?.ipos) === Number(ipos)) {
+          const lv = Number(event.data?.level) || level || 4;
+          const label =
+            typeof event.data?.timeLabel === "string" && event.data.timeLabel
+              ? event.data.timeLabel
+              : formatGameTime(getBattleTimeSeconds(roomData));
+          showFor3s(lv, label);
+        }
+      };
+    } catch {
+      bc = null;
+    }
+    return () => {
+      try {
+        bc?.close();
+      } catch {
+        /* noop */
+      }
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ipos]);
+
+  return notif;
+}
+
+function formatGoldDiff(diffVal: number): string {
+  const v = Math.round(diffVal);
+  // Below 1000 (e.g. 999): show as-is, don't abbreviate to K
+  if (Math.abs(v) < 1000) return "+" + String(v);
+  return "+" + (v / 1000).toFixed(1).replace(".0", "") + "K";
+}
+
+const SIDE_ITEM_VISIBLE_KEY = "mlbs_side_item_visible";
+
+let globalSideItemVisible = true;
+const sideItemListeners = new Set<(v: boolean) => void>();
+
+function setGlobalSideItemVisible(v: boolean) {
+  globalSideItemVisible = v;
+  sideItemListeners.forEach((fn) => fn(v));
+}
+
+function useSideItemVisible(): boolean {
+  const [visible, setVisible] = useState(globalSideItemVisible);
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(SIDE_ITEM_VISIBLE_KEY);
+      if (stored !== null) {
+        const v = stored !== "false";
+        if (v !== globalSideItemVisible) setGlobalSideItemVisible(v);
+        else setVisible(v);
+      }
+    } catch {
+      /* noop */
+    }
+    const listener = (v: boolean) => setVisible(v);
+    sideItemListeners.add(listener);
+    return () => {
+      sideItemListeners.delete(listener);
+    };
+  }, []);
+  return visible;
+}
+
 function SingleBluePlayerSideCard({ ipos }: { ipos: number }) {
   const roomData = useRoomData();
   const players = Array.isArray(roomData?.players) ? roomData.players : [];
@@ -895,6 +1071,9 @@ function SingleBluePlayerSideCard({ ipos }: { ipos: number }) {
   const dead = player?.dead ?? 0;
   const assist = player?.assist ?? 0;
   const level = player?.level !== undefined ? player.level : 1;
+  const role = Number(player?.role) || 0;
+  const levelUp = useLevelUpNotif({ ipos, level, roomData });
+  const showSideItem = useSideItemVisible();
 
   const validEquips = Array.isArray(player?.equips)
     ? player.equips.map(Number).filter((id: number) => id > 0)
@@ -906,6 +1085,17 @@ function SingleBluePlayerSideCard({ ipos }: { ipos: number }) {
 
   return (
     <div className="content-stretch flex gap-[29px] items-center justify-center relative shrink-0 w-[246px]" data-name="Container User Info - blue">
+      <AnimatePresence>
+        {levelUp && (
+          <LevelUpOverlay
+            playerName={playerName}
+            level={levelUp.level}
+            role={role}
+            timeLabel={levelUp.timeLabel}
+            team="blue"
+          />
+        )}
+      </AnimatePresence>
       <div className="flex-[1_0_0] grid-rows-[max-content] inline-grid leading-[0] min-w-px place-items-start relative" data-name="Container User Info - blue">
         <UserInfoBackground />
         
@@ -948,7 +1138,7 @@ function SingleBluePlayerSideCard({ ipos }: { ipos: number }) {
         <DynamicBlueUserInfo kill={kill} dead={dead} assist={assist} level={level} />
       </div>
 
-      <div className="bg-[#d9d9d9] relative shrink-0 size-[47px] overflow-hidden rounded" data-name="Item">
+      <div className={`bg-[#d9d9d9] relative shrink-0 size-[47px] overflow-hidden rounded${showSideItem ? "" : " invisible"}`} data-name="Item">
         {lastEquipId > 0 && <EquipIcon itemId={lastEquipId} size={47} />}
         <div aria-hidden className="absolute border-3 border-[#e8d367] border-solid inset-0 pointer-events-none z-10" />
       </div>
@@ -1639,6 +1829,9 @@ function SingleRedPlayerSideCard({ ipos }: { ipos: number }) {
   const dead = player?.dead ?? 0;
   const assist = player?.assist ?? 0;
   const level = player?.level !== undefined ? player.level : 1;
+  const role = Number(player?.role) || 0;
+  const levelUp = useLevelUpNotif({ ipos, level, roomData });
+  const showSideItem = useSideItemVisible();
 
   const validEquips = Array.isArray(player?.equips)
     ? player.equips.map(Number).filter((id: number) => id > 0)
@@ -1649,7 +1842,18 @@ function SingleRedPlayerSideCard({ ipos }: { ipos: number }) {
 
   return (
     <div className="content-stretch flex gap-[29px] items-center relative shrink-0 w-[251px]" data-name="Container User Info - red">
-      <div className="bg-[#d9d9d9] relative shrink-0 size-[47px] overflow-hidden rounded" data-name="Item">
+      <AnimatePresence>
+        {levelUp && (
+          <LevelUpOverlay
+            playerName={playerName}
+            level={levelUp.level}
+            role={role}
+            timeLabel={levelUp.timeLabel}
+            team="red"
+          />
+        )}
+      </AnimatePresence>
+      <div className={`bg-[#d9d9d9] relative shrink-0 size-[47px] overflow-hidden rounded${showSideItem ? "" : " invisible"}`} data-name="Item">
         {lastEquipId > 0 && <EquipIcon itemId={lastEquipId} size={47} />}
         <div aria-hidden className="absolute border-3 border-[#e8d367] border-solid inset-0 pointer-events-none z-10" />
       </div>
@@ -1863,7 +2067,7 @@ function Container59() {
         const redGold = json?.battle?.redTeamGold;
         if (typeof blueGold === "number" && typeof redGold === "number") {
           if (blueGold > redGold) {
-            setDiff('+' + ((blueGold - redGold) / 1000).toFixed(1).replace('.0', '') + 'K');
+            setDiff(formatGoldDiff(blueGold - redGold));
           } else {
             setDiff(null);
           }
@@ -2260,7 +2464,7 @@ function Container68() {
         const redGold = json?.battle?.redTeamGold;
         if (typeof blueGold === "number" && typeof redGold === "number") {
           if (redGold > blueGold) {
-            setDiff('+' + ((redGold - blueGold) / 1000).toFixed(1).replace('.0', '') + 'K');
+            setDiff(formatGoldDiff(redGold - blueGold));
           } else {
             setDiff(null);
           }
@@ -2318,12 +2522,30 @@ function Container61() {
   );
 }
 
+function formatGameVersion(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const parts = raw.split(".").filter((p) => p !== "" && /^\d+$/.test(p));
+  if (parts.length < 3) return null;
+  return parts.slice(0, 3).join(".");
+}
+
 function Container69() {
+  const roomData = useRoomData();
+  const battle = roomData?.battle ?? roomData?.Battle;
+  const version = formatGameVersion(battle?.versionInGame);
+
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-[162px]" data-name="Container">
       <div className="bg-[#d9d9d9] h-[110px] relative shrink-0 w-full" data-name="Rounded Rectangle" />
       <div className="bg-[#d69345] h-[24px] relative shrink-0 w-full" data-name="Rounded Rectangle" />
       <div className="bg-gradient-to-r from-[rgba(115,115,115,0)] h-[18px] relative shrink-0 to-white w-full" data-name="Rounded Rectangle" />
+      {version && (
+        <div className="bg-[#e8d367] h-[16px] relative shrink-0 w-full flex items-center justify-center" data-name="Game Version">
+          <p className="font-['Inter:Bold',sans-serif] font-bold text-black text-[11px] leading-none text-center m-0">
+            ver. {version}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -3885,8 +4107,8 @@ function SingleBluePlayerItemRow({ ipos }: { ipos: number }) {
   const player = findPlayer(players, ipos);
 
   const heroId = Number(player?.heroid || player?.SelHeroID) || 0;
-  const totalGold = Number(player?.totalGold) || 0;
-  const formattedGold = (totalGold / 1000).toFixed(1).replace(".0", "") + "k";
+  const totalGold = Number(player?.totalGold ?? player?.gold_total ?? player?.gold) || 0;
+  const formattedGold = String(totalGold);
 
   const rawEquips: number[] = Array.isArray(player?.equips)
     ? player.equips.map(Number)
@@ -3916,20 +4138,21 @@ function SingleBluePlayerItemRow({ ipos }: { ipos: number }) {
         ))}
       </div>
 
-      {/* Gold & Hero Icon */}
+      {/* Gold & Hero Icon - kotak seperti item: pill w-[88px] + gap 9px + hero 41px */}
       <div className="h-[52px] relative shrink-0 w-[140px]" data-name="Container">
-        <div className="absolute bg-[#d9d9d9] content-stretch flex flex-col h-[41px] items-start left-0 pb-[4px] pl-[6px] pr-[32px] pt-[5px] top-[5px] w-[114px]" data-name="Container">
-          <div className="content-stretch flex gap-[9px] items-center relative shrink-0" data-name="Container">
-            <p className="[word-break:break-word] font-['Inter:Semi_Bold',sans-serif] font-semibold leading-[normal] not-italic relative shrink-0 text-[#533920] text-[20px] whitespace-nowrap">
-              +{formattedGold}
+        <div className="absolute bg-[#d9d9d9] content-stretch flex flex-col h-[41px] items-center justify-center left-0 px-[6px] py-[5px] top-[5px] w-[88px]" data-name="Container">
+          <div className="content-stretch flex gap-[4px] items-center justify-center relative shrink-0 max-w-full" data-name="Container">
+            <p className="[word-break:break-word] font-['Inter:Semi_Bold',sans-serif] font-semibold leading-none not-italic relative shrink-0 text-[#533920] text-[15px] whitespace-nowrap">
+              {formattedGold}
             </p>
-            <div className="relative shrink-0 size-[32px]" data-name="logo">
+            <div className="relative shrink-0 size-[24px]" data-name="logo">
               <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={imgLogo3} />
             </div>
           </div>
         </div>
-        <div className="absolute left-[84px] size-[52px] top-0 rounded-full overflow-hidden">
-          <HeroIcon heroId={heroId} fallback={imgEllipse3} size={52} />
+        <div className="absolute left-[97px] top-[5px] bg-[#d9d9d9] relative shrink-0 size-[41px] overflow-hidden rounded z-10" data-name="Hero">
+          <HeroIcon heroId={heroId} fallback={imgEllipse3} size={41} />
+          <div aria-hidden className="absolute border-3 border-[#e8d367] border-solid inset-0 pointer-events-none z-10" />
         </div>
       </div>
     </div>
@@ -3942,8 +4165,8 @@ function SingleRedPlayerItemRow({ ipos }: { ipos: number }) {
   const player = findPlayer(players, ipos);
 
   const heroId = Number(player?.heroid || player?.SelHeroID) || 0;
-  const totalGold = Number(player?.totalGold) || 0;
-  const formattedGold = (totalGold / 1000).toFixed(1).replace(".0", "") + "k";
+  const totalGold = Number(player?.totalGold ?? player?.gold_total ?? player?.gold) || 0;
+  const formattedGold = String(totalGold);
 
   const rawEquips: number[] = Array.isArray(player?.equips)
     ? player.equips.map(Number)
@@ -3960,20 +4183,21 @@ function SingleRedPlayerItemRow({ ipos }: { ipos: number }) {
 
   return (
     <div className="content-stretch flex gap-[9px] items-center relative shrink-0 w-full" data-name="Container">
-      {/* Hero Icon & Gold */}
+      {/* Hero Icon & Gold - kotak seperti item: hero 41px + gap 9px + pill w-[88px] */}
       <div className="h-[52px] relative shrink-0 w-[140px]" data-name="Container">
-        <div className="absolute bg-[#d9d9d9] content-stretch flex flex-col h-[41px] items-center justify-center left-[27px] pb-[4px] pl-[28px] pt-[5px] top-[5px] w-[114px]" data-name="Container">
-          <div className="content-stretch flex gap-[9px] items-center justify-center relative shrink-0 w-full" data-name="Container">
-            <div className="relative shrink-0 size-[32px]" data-name="logo">
+        <div className="absolute bg-[#d9d9d9] content-stretch flex flex-col h-[41px] items-center justify-center left-[50px] px-[6px] py-[5px] top-[5px] w-[88px]" data-name="Container">
+          <div className="content-stretch flex gap-[4px] items-center justify-center relative shrink-0 max-w-full" data-name="Container">
+            <div className="relative shrink-0 size-[24px]" data-name="logo">
               <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={imgLogo3} />
             </div>
-            <p className="[word-break:break-word] font-['Inter:Semi_Bold',sans-serif] font-semibold leading-[normal] not-italic relative shrink-0 text-[#533920] text-[20px] whitespace-nowrap">
-              +{formattedGold}
+            <p className="[word-break:break-word] font-['Inter:Semi_Bold',sans-serif] font-semibold leading-none not-italic relative shrink-0 text-[#533920] text-[15px] whitespace-nowrap">
+              {formattedGold}
             </p>
           </div>
         </div>
-        <div className="absolute left-[8px] size-[52px] top-0 rounded-full overflow-hidden">
-          <HeroIcon heroId={heroId} fallback={imgEllipse3} size={52} />
+        <div className="absolute left-0 top-[5px] bg-[#d9d9d9] relative shrink-0 size-[41px] overflow-hidden rounded z-10" data-name="Hero">
+          <HeroIcon heroId={heroId} fallback={imgEllipse3} size={41} />
+          <div aria-hidden className="absolute border-3 border-[#e8d367] border-solid inset-0 pointer-events-none z-10" />
         </div>
       </div>
 
@@ -4042,6 +4266,14 @@ export default function Inmatch() {
       } else if (event.data?.type === "TRIGGER_TURTLE") {
         setShowTurtle(true);
         setTimeout(() => setShowTurtle(false), 5000);
+      } else if (event.data?.type === "SET_SIDE_ITEM_VISIBLE") {
+        const v = event.data.visible !== false;
+        try {
+          localStorage.setItem(SIDE_ITEM_VISIBLE_KEY, String(v));
+        } catch {
+          /* noop */
+        }
+        setGlobalSideItemVisible(v);
       }
     };
 

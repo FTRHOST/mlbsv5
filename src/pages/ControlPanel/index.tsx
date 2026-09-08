@@ -7,6 +7,9 @@ export default function ControlPanel() {
   const [activeOverlay, setActiveOverlay] = useState<"none" | "emblem" | "item">("none");
   const [turtleActive, setTurtleActive] = useState(false);
   const [channel, setChannel] = useState<BroadcastChannel | null>(null);
+  const [testIpos, setTestIpos] = useState<number>(1);
+  const [testLevel, setTestLevel] = useState<number>(4);
+  const [showSideItem, setShowSideItem] = useState<boolean>(true);
 
   const [rawPayloadInput, setRawPayloadInput] = useState<string>(
     `message: {'type': 'send', 'payload': '{"type":"mlbb_live_data","payload":{"gameState":0,"draftPhase":"PREPARATION","draftTimer":0,"players":[{"ipos":0,"id":"2178663653","name":"petwir-kepo","role":5,"team":2,"heroid":18,"uiHeroIDChoose":0,"battleSpell":20050,"emblem":0,"emblemSkills":[],"pickPhase":false,"banPhase":false,"SelHeroID":18,"banHero":0,"hp":3070,"maxHp":3070,"level":6,"deathTime":0,"kill":2,"dead":2,"assist":0,"ultActive":false,"equips":[2305,1001,2003,1004,0,0],"totalGold":2284,"damageDealt":16442,"damageTaken":7412},{"ipos":0,"id":"2231735373","name":"Tony Mark*66","role":3,"team":1,"heroid":10,"uiHeroIDChoose":0,"battleSpell":20050,"emblem":0,"emblemSkills":[],"pickPhase":false,"banPhase":false,"SelHeroID":10,"banHero":0,"hp":3440,"maxHp":3440,"level":4,"deathTime":0,"kill":1,"dead":2,"assist":0,"ultActive":false,"equips":[3562,1202,1203,0,0,0],"totalGold":1492,"damageDealt":7046,"damageTaken":9248}],"Battle":{"battleState":0,"winCamp":0,"waktuPertandingan":269,"blueTeamKill":1,"redTeamKill":2,"blueTeamGold":1492,"redTeamGold":2284,"blueTeamKillLord":0,"redTeamKillLord":0,"blueTeamDestroyTuret":0,"redTeamDestroyTuret":0}}}'} data: None`
@@ -19,6 +22,13 @@ export default function ControlPanel() {
 
     const stored = localStorage.getItem("mlbs_active_overlay") as "none" | "emblem" | "item";
     if (stored) setActiveOverlay(stored);
+
+    try {
+      const storedItem = localStorage.getItem("mlbs_side_item_visible");
+      if (storedItem !== null) setShowSideItem(storedItem !== "false");
+    } catch {
+      /* noop */
+    }
 
     return () => {
       bc.close();
@@ -35,6 +45,21 @@ export default function ControlPanel() {
     setTurtleActive(true);
     channel?.postMessage({ type: "TRIGGER_TURTLE" });
     setTimeout(() => setTurtleActive(false), 3000);
+  };
+
+  const triggerLevelUpTest = () => {
+    channel?.postMessage({ type: "TRIGGER_LEVELUP", ipos: testIpos, level: testLevel });
+  };
+
+  const toggleSideItem = () => {
+    const next = !showSideItem;
+    setShowSideItem(next);
+    try {
+      localStorage.setItem("mlbs_side_item_visible", String(next));
+    } catch {
+      /* noop */
+    }
+    channel?.postMessage({ type: "SET_SIDE_ITEM_VISIBLE", visible: next });
   };
 
   const handleSendLiveData = () => {
@@ -120,6 +145,20 @@ export default function ControlPanel() {
             <span className="text-neutral-400">Status Overlay Aktif:</span>
             <span className="font-bold text-amber-400 uppercase tracking-widest">{activeOverlay}</span>
           </div>
+
+          <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800 flex items-center justify-between text-xs gap-3">
+            <span className="text-neutral-400">Item Kartu User (kotak 47px di sisi kartu):</span>
+            <button
+              onClick={toggleSideItem}
+              className={`px-4 py-1.5 rounded-lg font-bold text-xs border transition ${
+                showSideItem
+                  ? "bg-emerald-900/60 border-emerald-500 text-emerald-200"
+                  : "bg-neutral-800 border-neutral-700 text-neutral-400"
+              }`}
+            >
+              {showSideItem ? "👁️ Tampil" : "🚫 Sembunyi"}
+            </button>
+          </div>
         </div>
 
         {/* Notif Trigger Section */}
@@ -143,10 +182,60 @@ export default function ControlPanel() {
           </div>
         </div>
 
+        {/* Level Up Test Section (test only) */}
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 space-y-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-300">
+            3. Uji Coba Notifikasi Level Up (Test Only)
+          </h2>
+          <p className="text-xs text-neutral-400">
+            Tombol ini hanya untuk uji tampilan. Di live, notif muncul otomatis 3 detik saat pemain mencapai level 4 / 15, dengan waktu game saat level didapat.
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="text-xs text-neutral-400 space-y-1">
+              <span>Pemain (ipos)</span>
+              <select
+                value={testIpos}
+                onChange={(e) => setTestIpos(Number(e.target.value))}
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-amber-500"
+              >
+                <optgroup label="Blue Team">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <option key={i} value={i}>Blue {i}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Red Team">
+                  {[6, 7, 8, 9, 10].map((i) => (
+                    <option key={i} value={i}>Red {i}</option>
+                  ))}
+                </optgroup>
+              </select>
+            </label>
+            <label className="text-xs text-neutral-400 space-y-1">
+              <span>Level</span>
+              <select
+                value={testLevel}
+                onChange={(e) => setTestLevel(Number(e.target.value))}
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-amber-500"
+              >
+                {[4, 15].map((lv) => (
+                  <option key={lv} value={lv}>Level {lv}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <button
+            onClick={triggerLevelUpTest}
+            className="w-full py-3 px-4 rounded-lg font-bold text-sm border transition flex items-center justify-center gap-2 bg-neutral-800 border-neutral-700 text-neutral-200 hover:bg-neutral-700"
+          >
+            <span>⬆️</span>
+            <span>Test Trigger Level Up (Blue kiri→kanan / Red kanan→kiri)</span>
+          </button>
+        </div>
+
         {/* Live Payload Tester Section */}
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-300">
-            3. Simulasi Input Raw Payload MLBB Live Data
+            4. Simulasi Input Raw Payload MLBB Live Data
           </h2>
           <p className="text-xs text-neutral-400">
             Paste pesan string payload (format Python socket, raw JSON, atau mlbb_live_data) di bawah ini untuk menguji update UI overlay secara lokal:
