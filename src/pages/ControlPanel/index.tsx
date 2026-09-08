@@ -3,6 +3,71 @@ import { Link } from "react-router";
 import { sendLocalLiveData } from "../../hooks/useLocalLiveData";
 import { parseMlbbLiveData } from "../../hooks/useRoomData";
 
+type SideMediaSlot = "a" | "b";
+type SideMediaData = { bg: string; photos: string[] };
+
+const SIDE_MEDIA_KEYS: Record<SideMediaSlot, string> = {
+  a: "mlbs_side_media_a",
+  b: "mlbs_side_media_b",
+};
+
+const SIDE_MEDIA_DEFAULTS: Record<SideMediaSlot, SideMediaData> = {
+  a: { bg: "#e8d367", photos: [] },
+  b: { bg: "#d9d9d9", photos: [] },
+};
+
+const SIDE_MEDIA_MAX_PHOTOS = 10;
+
+function readSideMedia(slot: SideMediaSlot): SideMediaData {
+  try {
+    const raw = localStorage.getItem(SIDE_MEDIA_KEYS[slot]);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<SideMediaData>;
+      return {
+        bg: typeof parsed.bg === "string" && parsed.bg ? parsed.bg : SIDE_MEDIA_DEFAULTS[slot].bg,
+        photos: Array.isArray(parsed.photos) ? parsed.photos.filter((p) => typeof p === "string") : [],
+      };
+    }
+  } catch {
+    /* noop */
+  }
+  return { ...SIDE_MEDIA_DEFAULTS[slot], photos: [] };
+}
+
+function downscaleImage(file: File, maxWidth = 324): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const scale = Math.min(1, maxWidth / img.width);
+        const w = Math.max(1, Math.round(img.width * scale));
+        const h = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          URL.revokeObjectURL(url);
+          reject(new Error("canvas tidak tersedia"));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      } catch (e) {
+        URL.revokeObjectURL(url);
+        reject(e);
+      }
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("gagal membaca gambar"));
+    };
+    img.src = url;
+  });
+}
+
 export default function ControlPanel() {
   const [activeOverlay, setActiveOverlay] = useState<"none" | "emblem" | "item">("none");
   const [turtleActive, setTurtleActive] = useState(false);
@@ -10,6 +75,11 @@ export default function ControlPanel() {
   const [testIpos, setTestIpos] = useState<number>(1);
   const [testLevel, setTestLevel] = useState<number>(4);
   const [showSideItem, setShowSideItem] = useState<boolean>(true);
+  const [sideMedia, setSideMedia] = useState<Record<SideMediaSlot, SideMediaData>>({
+    a: { ...SIDE_MEDIA_DEFAULTS.a, photos: [] },
+    b: { ...SIDE_MEDIA_DEFAULTS.b, photos: [] },
+  });
+  const [sideMediaError, setSideMediaError] = useState<string>("");
 
   const [rawPayloadInput, setRawPayloadInput] = useState<string>(
     `message: {'type': 'send', 'payload': '{"type":"mlbb_live_data","payload":{"gameState":0,"draftPhase":"PREPARATION","draftTimer":0,"players":[{"ipos":0,"id":"2178663653","name":"petwir-kepo","role":5,"team":2,"heroid":18,"uiHeroIDChoose":0,"battleSpell":20050,"emblem":0,"emblemSkills":[],"pickPhase":false,"banPhase":false,"SelHeroID":18,"banHero":0,"hp":3070,"maxHp":3070,"level":6,"deathTime":0,"kill":2,"dead":2,"assist":0,"ultActive":false,"equips":[2305,1001,2003,1004,0,0],"totalGold":2284,"damageDealt":16442,"damageTaken":7412},{"ipos":0,"id":"2231735373","name":"Tony Mark*66","role":3,"team":1,"heroid":10,"uiHeroIDChoose":0,"battleSpell":20050,"emblem":0,"emblemSkills":[],"pickPhase":false,"banPhase":false,"SelHeroID":10,"banHero":0,"hp":3440,"maxHp":3440,"level":4,"deathTime":0,"kill":1,"dead":2,"assist":0,"ultActive":false,"equips":[3562,1202,1203,0,0,0],"totalGold":1492,"damageDealt":7046,"damageTaken":9248}],"Battle":{"battleState":0,"winCamp":0,"waktuPertandingan":269,"blueTeamKill":1,"redTeamKill":2,"blueTeamGold":1492,"redTeamGold":2284,"blueTeamKillLord":0,"redTeamKillLord":0,"blueTeamDestroyTuret":0,"redTeamDestroyTuret":0}}}'} data: None`
@@ -29,6 +99,8 @@ export default function ControlPanel() {
     } catch {
       /* noop */
     }
+
+    setSideMedia({ a: readSideMedia("a"), b: readSideMedia("b") });
 
     return () => {
       bc.close();
@@ -60,6 +132,58 @@ export default function ControlPanel() {
       /* noop */
     }
     channel?.postMessage({ type: "SET_SIDE_ITEM_VISIBLE", visible: next });
+  };
+
+  const sendSideMedia = (slot: SideMediaSlot, data: SideMediaData) => {
+    setSideMedia((prev) => ({ ...prev, [slot]: data }));
+    try {
+      localStorage.setItem(SIDE_MEDIA_KEYS[slot], JSON.stringify(data));
+    } catch {
+      setSideMediaError("❌ Penyimpanan penuh — hapus sebagian foto lalu coba lagi.");
+      return;
+    }
+    channel?.postMessage({ type: "SET_SIDE_MEDIA", slot, data });
+  };
+
+  const handleSideBg = (slot: SideMediaSlot, bg: string) => {
+    setSideMediaError("");
+    sendSideMedia(slot, { ...sideMedia[slot], bg });
+  };
+
+  const handleSideFiles = async (slot: SideMediaSlot, files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setSideMediaError("");
+    const current = sideMedia[slot].photos;
+    const room = SIDE_MEDIA_MAX_PHOTOS - current.length;
+    if (room <= 0) {
+      setSideMediaError(`❌ Maksimal ${SIDE_MEDIA_MAX_PHOTOS} foto per kotak.`);
+      return;
+    }
+    try {
+      const picked = Array.from(files).filter((f) => f.type.startsWith("image/")).slice(0, room);
+      const downsized: string[] = [];
+      for (const f of picked) {
+        downsized.push(await downscaleImage(f));
+      }
+      sendSideMedia(slot, { ...sideMedia[slot], photos: [...current, ...downsized] });
+    } catch {
+      setSideMediaError("❌ Gagal memproses gambar. Coba file lain.");
+    }
+  };
+
+  const removeSidePhoto = (slot: SideMediaSlot, idx: number) => {
+    setSideMediaError("");
+    sendSideMedia(slot, { ...sideMedia[slot], photos: sideMedia[slot].photos.filter((_, i) => i !== idx) });
+  };
+
+  const clearSidePhotos = (slot: SideMediaSlot) => {
+    setSideMediaError("");
+    sendSideMedia(slot, { ...sideMedia[slot], photos: [] });
+  };
+
+  const resetSideMedia = (slot: SideMediaSlot) => {
+    setSideMediaError("");
+    sendSideMedia(slot, { ...SIDE_MEDIA_DEFAULTS[slot], photos: [] });
   };
 
   const handleSendLiveData = () => {
@@ -263,6 +387,91 @@ export default function ControlPanel() {
               </span>
             )}
           </div>
+        </div>
+
+        {/* Side Media Section */}
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 space-y-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-300">
+            5. Foto & Background Kotak Scoreboard
+          </h2>
+          <p className="text-xs text-neutral-400">
+            1 foto = tampil statis. Lebih dari 1 foto = slideshow fade otomatis (±5 detik). Kedua kotak punya penyimpanan terpisah.
+          </p>
+          {sideMediaError && (
+            <p className="text-xs font-medium text-red-300 bg-red-950/60 px-3 py-1.5 rounded-lg border border-red-800">
+              {sideMediaError}
+            </p>
+          )}
+          {(["a", "b"] as SideMediaSlot[]).map((slot) => (
+            <div key={slot} className="bg-neutral-950 border border-neutral-800 rounded-lg p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold text-neutral-200">
+                  {slot === "a" ? "Slot A — Kotak emas (108×105)" : "Slot B — Blok abu kolom kanan (162×110)"}
+                </p>
+                <span className="text-[10px] text-neutral-500">
+                  {sideMedia[slot].photos.length === 0
+                    ? "Warna polos"
+                    : sideMedia[slot].photos.length === 1
+                      ? "1 foto (statis)"
+                      : `${sideMedia[slot].photos.length} foto (fade)`}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 text-xs text-neutral-400">
+                  <input
+                    type="color"
+                    value={sideMedia[slot].bg}
+                    onChange={(e) => handleSideBg(slot, e.target.value)}
+                    className="w-10 h-8 rounded cursor-pointer bg-transparent"
+                  />
+                  <span className="font-mono">{sideMedia[slot].bg}</span>
+                </label>
+                <label className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-lg text-xs font-bold cursor-pointer">
+                  📷 Upload Foto
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => {
+                      handleSideFiles(slot, e.target.files);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                {sideMedia[slot].photos.length > 0 && (
+                  <button
+                    onClick={() => clearSidePhotos(slot)}
+                    className="px-3 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-lg text-xs text-neutral-300"
+                  >
+                    Hapus foto
+                  </button>
+                )}
+                <button
+                  onClick={() => resetSideMedia(slot)}
+                  className="px-3 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-lg text-xs text-neutral-300"
+                >
+                  Reset
+                </button>
+              </div>
+              {sideMedia[slot].photos.length > 0 && (
+                <div className="grid grid-cols-5 gap-2">
+                  {sideMedia[slot].photos.map((src, i) => (
+                    <div key={i} className="relative rounded overflow-hidden border border-neutral-700 aspect-square">
+                      <img src={src} alt="" className="absolute inset-0 size-full object-cover" />
+                      <button
+                        onClick={() => removeSidePhoto(slot, i)}
+                        className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/70 hover:bg-red-600 text-white text-[10px] leading-none flex items-center justify-center"
+                        title="Hapus foto ini"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
 
         {/* Quick Instructions */}

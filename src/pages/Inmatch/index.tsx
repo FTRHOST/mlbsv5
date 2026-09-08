@@ -1054,6 +1054,110 @@ function useSideItemVisible(): boolean {
   return visible;
 }
 
+type SideMediaSlot = "a" | "b";
+type SideMediaData = { bg: string; photos: string[] };
+
+const SIDE_MEDIA_KEYS: Record<SideMediaSlot, string> = {
+  a: "mlbs_side_media_a",
+  b: "mlbs_side_media_b",
+};
+
+const SIDE_MEDIA_DEFAULTS: Record<SideMediaSlot, SideMediaData> = {
+  a: { bg: "#e8d367", photos: [] },
+  b: { bg: "#d9d9d9", photos: [] },
+};
+
+const globalSideMedia: Record<SideMediaSlot, SideMediaData> = {
+  a: { ...SIDE_MEDIA_DEFAULTS.a, photos: [] },
+  b: { ...SIDE_MEDIA_DEFAULTS.b, photos: [] },
+};
+const sideMediaListeners = new Set<(slot: SideMediaSlot, data: SideMediaData) => void>();
+
+function readSideMedia(slot: SideMediaSlot): SideMediaData {
+  try {
+    const raw = localStorage.getItem(SIDE_MEDIA_KEYS[slot]);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<SideMediaData>;
+      return {
+        bg: typeof parsed.bg === "string" && parsed.bg ? parsed.bg : SIDE_MEDIA_DEFAULTS[slot].bg,
+        photos: Array.isArray(parsed.photos) ? parsed.photos.filter((p) => typeof p === "string") : [],
+      };
+    }
+  } catch {
+    /* noop */
+  }
+  return { ...SIDE_MEDIA_DEFAULTS[slot], photos: [] };
+}
+
+function setGlobalSideMedia(slot: SideMediaSlot, data: SideMediaData) {
+  globalSideMedia[slot] = data;
+  sideMediaListeners.forEach((fn) => fn(slot, data));
+}
+
+function useSideMedia(slot: SideMediaSlot): SideMediaData {
+  const [data, setData] = useState<SideMediaData>(globalSideMedia[slot]);
+  useEffect(() => {
+    const stored = readSideMedia(slot);
+    const cur = globalSideMedia[slot];
+    if (stored.bg !== cur.bg || JSON.stringify(stored.photos) !== JSON.stringify(cur.photos)) {
+      setGlobalSideMedia(slot, stored);
+    } else {
+      setData(stored);
+    }
+    const listener = (s: SideMediaSlot, d: SideMediaData) => {
+      if (s === slot) setData(d);
+    };
+    sideMediaListeners.add(listener);
+    return () => {
+      sideMediaListeners.delete(listener);
+    };
+  }, [slot]);
+  return data;
+}
+
+const SIDE_MEDIA_SLIDE_MS = 5000;
+
+function SideMedia({ slot, className }: { slot: SideMediaSlot; className: string }) {
+  const { bg, photos } = useSideMedia(slot);
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    setIndex(0);
+  }, [photos.length]);
+
+  useEffect(() => {
+    if (photos.length <= 1) return;
+    const t = setInterval(() => {
+      setIndex((prev) => (prev + 1) % photos.length);
+    }, SIDE_MEDIA_SLIDE_MS);
+    return () => clearInterval(t);
+  }, [photos.length]);
+
+  const current = photos.length > 0 ? photos[index % photos.length] : null;
+
+  return (
+    <div className={`${className} relative shrink-0 overflow-hidden`} data-name="Rounded Rectangle" style={{ background: bg }}>
+      {current && photos.length <= 1 && (
+        <img alt="" className="absolute inset-0 size-full object-cover" src={current} />
+      )}
+      <AnimatePresence>
+        {current && photos.length > 1 && (
+          <motion.img
+            key={`${slot}-${index % photos.length}`}
+            alt=""
+            className="absolute inset-0 size-full object-cover"
+            src={current}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 function SingleBluePlayerSideCard({ ipos }: { ipos: number }) {
   const roomData = useRoomData();
   const players = Array.isArray(roomData?.players) ? roomData.players : [];
@@ -2536,7 +2640,7 @@ function Container69() {
 
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-[162px]" data-name="Container">
-      <div className="bg-[#d9d9d9] h-[110px] relative shrink-0 w-full" data-name="Rounded Rectangle" />
+      <SideMedia slot="b" className="h-[110px] w-full" />
       <div className="bg-[#d69345] h-[24px] relative shrink-0 w-full" data-name="Rounded Rectangle" />
       <div className="bg-gradient-to-r from-[rgba(115,115,115,0)] h-[18px] relative shrink-0 to-white w-full" data-name="Rounded Rectangle" />
       {version && (
@@ -2558,7 +2662,7 @@ function Container51() {
       <Menu />
       <Container61 />
       <div className="bg-[#d9d9d9] h-[95px] relative shrink-0 w-[96px]" data-name="Rounded Rectangle" />
-      <div className="bg-[#e8d367] h-[105px] relative shrink-0 w-[108px]" data-name="Rounded Rectangle" />
+      <SideMedia slot="a" className="h-[105px] w-[108px]" />
       <Container69 />
     </motion.div>
   );
@@ -4274,6 +4378,21 @@ export default function Inmatch() {
           /* noop */
         }
         setGlobalSideItemVisible(v);
+      } else if (event.data?.type === "SET_SIDE_MEDIA") {
+        const slot = event.data.slot as SideMediaSlot;
+        if (slot === "a" || slot === "b") {
+          const d = event.data.data as Partial<SideMediaData> | undefined;
+          const next: SideMediaData = {
+            bg: typeof d?.bg === "string" && d.bg ? d.bg : SIDE_MEDIA_DEFAULTS[slot].bg,
+            photos: Array.isArray(d?.photos) ? d.photos.filter((p) => typeof p === "string") : [],
+          };
+          try {
+            localStorage.setItem(SIDE_MEDIA_KEYS[slot], JSON.stringify(next));
+          } catch {
+            /* noop */
+          }
+          setGlobalSideMedia(slot, next);
+        }
       }
     };
 
