@@ -1,0 +1,93 @@
+- generic [ref=e9]:
+  - generic [ref=e10]:
+    - generic [ref=e11]:
+      - generic [ref=e13]:
+        - paragraph [ref=e21]: Player 1
+        - generic [ref=e34]:
+          - generic [ref=e39]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+      - generic [ref=e42]:
+        - paragraph [ref=e50]: Player 2
+        - generic [ref=e63]:
+          - generic [ref=e68]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+      - generic [ref=e71]:
+        - paragraph [ref=e79]: Player 3
+        - generic [ref=e92]:
+          - generic [ref=e97]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+      - generic [ref=e100]:
+        - paragraph [ref=e108]: Player 4
+        - generic [ref=e121]:
+          - generic [ref=e126]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+      - generic [ref=e129]:
+        - paragraph [ref=e137]: Player 5
+        - generic [ref=e150]:
+          - generic [ref=e155]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+    - generic [ref=e157]:
+      - generic [ref=e160]:
+        - paragraph [ref=e168]: Player 6
+        - generic [ref=e181]:
+          - generic [ref=e188]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+      - generic [ref=e191]:
+        - paragraph [ref=e199]: Player 7
+        - generic [ref=e212]:
+          - generic [ref=e219]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+      - generic [ref=e222]:
+        - paragraph [ref=e230]: Player 8
+        - generic [ref=e243]:
+          - generic [ref=e250]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+      - generic [ref=e253]:
+        - paragraph [ref=e261]: Player 9
+        - generic [ref=e274]:
+          - generic [ref=e281]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+      - generic [ref=e284]:
+        - paragraph [ref=e292]: Player 10
+        - generic [ref=e305]:
+          - generic [ref=e312]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+  - generic [ref=e315]:
+    - generic [ref=e317]:
+      - generic [ref=e320]:
+        - paragraph [ref=e324]: "0"
+        - paragraph [ref=e328]: "0"
+        - paragraph [ref=e332]: "0"
+        - paragraph [ref=e336]: 10K
+      - paragraph [ref=e340]: blue team
+    - generic [ref=e341]:
+      - paragraph [ref=e368]: 00:00
+      - paragraph [ref=e370]: "0"
+      - paragraph [ref=e372]: "0"
+    - generic [ref=e373]:
+      - generic [ref=e376]:
+        - paragraph [ref=e380]: 10K
+        - paragraph [ref=e384]: "0"
+        - paragraph [ref=e388]: "0"
+        - paragraph [ref=e392]: "0"
+      - paragraph [ref=e396]: red teeam
