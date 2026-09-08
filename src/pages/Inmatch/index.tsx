@@ -2626,6 +2626,95 @@ function Container61() {
   );
 }
 
+type PlayerStatsMetric = "gold" | "dealt" | "taken";
+
+const PLAYER_STATS_KEY = "mlbs_player_stats";
+
+const PLAYER_STATS_TITLES: Record<PlayerStatsMetric, string> = {
+  gold: "GOLD RANK",
+  dealt: "TOTAL DAMAGE",
+  taken: "DAMAGE TAKEN",
+};
+
+function parsePlayerStatsMetric(v: unknown): PlayerStatsMetric {
+  return v === "dealt" || v === "taken" ? v : "gold";
+}
+
+type PlayerStatRow = {
+  key: string;
+  name: string;
+  heroId: number;
+  gold: number;
+  dealt: number;
+  taken: number;
+};
+
+function getPlayerStatRows(players: any[]): PlayerStatRow[] {
+  return players.slice(0, 10).map((p: any, idx: number) => ({
+    key: String(p?.id ?? p?.ipos ?? idx),
+    name: p?.name || `Player ${idx + 1}`,
+    heroId: Number(p?.heroid || p?.SelHeroID) || 0,
+    gold: Number(p?.totalGold ?? p?.gold_total ?? p?.gold) || 0,
+    dealt: Number(p?.damageDealt ?? p?.damage ?? p?.hero_hurt) || 0,
+    taken: Number(p?.damageTaken ?? p?.hurted) || 0,
+  }));
+}
+
+function PlayerStatsOverlay({ metric }: { metric: PlayerStatsMetric }) {
+  const roomData = useRoomData();
+  const players = Array.isArray(roomData?.players) ? roomData.players : [];
+  const rows = getPlayerStatRows(players)
+    .map((r) => ({ ...r, value: metric === "gold" ? r.gold : metric === "dealt" ? r.dealt : r.taken }))
+    .sort((a, b) => b.value - a.value);
+  const max = rows.length > 0 ? Math.max(1, rows[0].value) : 1;
+
+  return (
+    <motion.div
+      className="absolute right-0 top-[178px] w-[367px] z-50 flex flex-col bg-white overflow-hidden"
+      data-name="Player Stats"
+      initial={{ clipPath: "inset(0% 100% 0% 0%)", opacity: 1 }}
+      animate={{ clipPath: "inset(0% 0% 0% 0%)", opacity: 1 }}
+      exit={{ clipPath: "inset(0% 100% 0% 0%)", opacity: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+      <div className="flex items-center justify-center py-[7px]" data-name="Stats Title">
+        <p className="font-['Koulen:Regular',sans-serif] text-black text-[36px] leading-[42px] tracking-[0.07em] text-center m-0">
+          {PLAYER_STATS_TITLES[metric]}
+        </p>
+      </div>
+      <div className="flex flex-col items-center px-[7px] pb-[12px]" data-name="Player Stats List">
+        {rows.length === 0 && (
+          <p className="font-['Inter:Medium',sans-serif] text-black/60 text-[14px] py-6 m-0">
+            Menunggu live data…
+          </p>
+        )}
+        {rows.map((row) => (
+          <div key={row.key} className="flex items-center w-full h-[52px] shrink-0" data-name="Player Stat Row">
+            <p className="font-['Koulen:Regular',sans-serif] text-black text-[12px] tracking-[0.1em] text-center w-[56px] shrink-0 m-0 truncate">
+              {String(row.value)}
+            </p>
+            <div className="flex-1 flex flex-col justify-center min-w-0 mr-[8px]" data-name="Name and Bar">
+              <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-black text-[12px] leading-[14px] text-right truncate m-0">
+                {row.name}
+              </p>
+              <div className="flex justify-end w-full mt-[3px]" data-name="Bar Track">
+                <div
+                  className="bg-[#d69345] h-[7px]"
+                  data-name="Value Bar"
+                  style={{ width: `${Math.max(2, (row.value / max) * 100)}%` }}
+                />
+              </div>
+            </div>
+            <div className="size-[52px] shrink-0 rounded-full overflow-hidden border border-white bg-[#d9d9d9]" data-name="Hero Icon">
+              <HeroIcon heroId={row.heroId} fallback={imgEllipse3} size={52} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
 function formatGameVersion(raw: unknown): string | null {
   if (typeof raw !== "string") return null;
   const parts = raw.split(".").filter((p) => p !== "" && /^\d+$/.test(p));
@@ -4351,6 +4440,67 @@ function Container90() {
 export default function Inmatch() {
   const [activeOverlay, setActiveOverlay] = useState<"none" | "emblem" | "item">("none");
   const [showTurtle, setShowTurtle] = useState(false);
+  const [playerStats, setPlayerStats] = useState<{ visible: boolean; metric: PlayerStatsMetric }>(() => {
+    try {
+      const raw = localStorage.getItem(PLAYER_STATS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { visible?: boolean; metric?: unknown };
+        return { visible: !!parsed.visible, metric: parsePlayerStatsMetric(parsed.metric) };
+      }
+    } catch {
+      /* noop */
+    }
+    return { visible: false, metric: "gold" as PlayerStatsMetric };
+  });
+
+  useEffect(() => {
+    const bc = new BroadcastChannel("mlbs_overlay_control");
+    bc.onmessage = (event) => {
+      if (event.data?.type === "SET_PLAYER_STATS") {
+        const next = {
+          visible: event.data.visible !== false,
+          metric: parsePlayerStatsMetric(event.data.metric),
+        };
+        setPlayerStats(next);
+        try {
+          localStorage.setItem(PLAYER_STATS_KEY, JSON.stringify(next));
+        } catch {
+          /* noop */
+        }
+      }
+    };
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === PLAYER_STATS_KEY && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue) as { visible?: boolean; metric?: unknown };
+          setPlayerStats({ visible: !!parsed.visible, metric: parsePlayerStatsMetric(parsed.metric) });
+        } catch {
+          /* noop */
+        }
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
+    const pollInterval = setInterval(() => {
+      try {
+        const raw = localStorage.getItem(PLAYER_STATS_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw) as { visible?: boolean; metric?: unknown };
+          const next = { visible: !!parsed.visible, metric: parsePlayerStatsMetric(parsed.metric) };
+          setPlayerStats((prev) => (prev.visible === next.visible && prev.metric === next.metric ? prev : next));
+        }
+      } catch {
+        /* noop */
+      }
+    }, 500);
+
+    return () => {
+      bc.close();
+      window.removeEventListener("storage", handleStorage);
+      clearInterval(pollInterval);
+    };
+  }, []);
 
   useEffect(() => {
     // Sync state helper
@@ -4478,6 +4628,13 @@ export default function Inmatch() {
           >
             <Container90 />
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Player Stats Overlay (topmost layer) */}
+      <AnimatePresence>
+        {playerStats.visible && (
+          <PlayerStatsOverlay key={`player-stats-${playerStats.metric}`} metric={playerStats.metric} />
         )}
       </AnimatePresence>
 

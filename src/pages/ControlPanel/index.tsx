@@ -6,6 +6,20 @@ import { parseMlbbLiveData } from "../../hooks/useRoomData";
 type SideMediaSlot = "a" | "b";
 type SideMediaData = { bg: string; photos: string[] };
 
+type PlayerStatsMetric = "gold" | "dealt" | "taken";
+
+const PLAYER_STATS_KEY = "mlbs_player_stats";
+
+const PLAYER_STATS_METRICS: { id: PlayerStatsMetric; label: string }[] = [
+  { id: "gold", label: "Gold Rank" },
+  { id: "dealt", label: "Total Damage" },
+  { id: "taken", label: "Damage Taken" },
+];
+
+function parsePlayerStatsMetric(v: unknown): PlayerStatsMetric {
+  return v === "dealt" || v === "taken" ? v : "gold";
+}
+
 const SIDE_MEDIA_KEYS: Record<SideMediaSlot, string> = {
   a: "mlbs_side_media_a",
   b: "mlbs_side_media_b",
@@ -80,6 +94,8 @@ export default function ControlPanel() {
     b: { ...SIDE_MEDIA_DEFAULTS.b, photos: [] },
   });
   const [sideMediaError, setSideMediaError] = useState<string>("");
+  const [playerStatsVisible, setPlayerStatsVisible] = useState<boolean>(false);
+  const [playerStatsMetric, setPlayerStatsMetric] = useState<PlayerStatsMetric>("gold");
 
   const [rawPayloadInput, setRawPayloadInput] = useState<string>(
     `message: {'type': 'send', 'payload': '{"type":"mlbb_live_data","payload":{"gameState":0,"draftPhase":"PREPARATION","draftTimer":0,"players":[{"ipos":0,"id":"2178663653","name":"petwir-kepo","role":5,"team":2,"heroid":18,"uiHeroIDChoose":0,"battleSpell":20050,"emblem":0,"emblemSkills":[],"pickPhase":false,"banPhase":false,"SelHeroID":18,"banHero":0,"hp":3070,"maxHp":3070,"level":6,"deathTime":0,"kill":2,"dead":2,"assist":0,"ultActive":false,"equips":[2305,1001,2003,1004,0,0],"totalGold":2284,"damageDealt":16442,"damageTaken":7412},{"ipos":0,"id":"2231735373","name":"Tony Mark*66","role":3,"team":1,"heroid":10,"uiHeroIDChoose":0,"battleSpell":20050,"emblem":0,"emblemSkills":[],"pickPhase":false,"banPhase":false,"SelHeroID":10,"banHero":0,"hp":3440,"maxHp":3440,"level":4,"deathTime":0,"kill":1,"dead":2,"assist":0,"ultActive":false,"equips":[3562,1202,1203,0,0,0],"totalGold":1492,"damageDealt":7046,"damageTaken":9248}],"Battle":{"battleState":0,"winCamp":0,"waktuPertandingan":269,"blueTeamKill":1,"redTeamKill":2,"blueTeamGold":1492,"redTeamGold":2284,"blueTeamKillLord":0,"redTeamKillLord":0,"blueTeamDestroyTuret":0,"redTeamDestroyTuret":0}}}'} data: None`
@@ -101,6 +117,17 @@ export default function ControlPanel() {
     }
 
     setSideMedia({ a: readSideMedia("a"), b: readSideMedia("b") });
+
+    try {
+      const rawStats = localStorage.getItem(PLAYER_STATS_KEY);
+      if (rawStats) {
+        const parsed = JSON.parse(rawStats) as { visible?: boolean; metric?: unknown };
+        setPlayerStatsVisible(!!parsed.visible);
+        setPlayerStatsMetric(parsePlayerStatsMetric(parsed.metric));
+      }
+    } catch {
+      /* noop */
+    }
 
     return () => {
       bc.close();
@@ -184,6 +211,17 @@ export default function ControlPanel() {
   const resetSideMedia = (slot: SideMediaSlot) => {
     setSideMediaError("");
     sendSideMedia(slot, { ...SIDE_MEDIA_DEFAULTS[slot], photos: [] });
+  };
+
+  const sendPlayerStats = (visible: boolean, metric: PlayerStatsMetric) => {
+    setPlayerStatsVisible(visible);
+    setPlayerStatsMetric(metric);
+    try {
+      localStorage.setItem(PLAYER_STATS_KEY, JSON.stringify({ visible, metric }));
+    } catch {
+      /* noop */
+    }
+    channel?.postMessage({ type: "SET_PLAYER_STATS", visible, metric });
   };
 
   const handleSendLiveData = () => {
@@ -472,6 +510,42 @@ export default function ControlPanel() {
               )}
             </div>
           ))}
+        </div>
+
+        {/* Player Stats Section */}
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 space-y-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-300">
+            6. Player Stats Overlay
+          </h2>
+          <p className="text-xs text-neutral-400">
+            Urutan pemain otomatis dari nilai terbesar. Bar oranye proporsional terhadap nilai tertinggi.
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {PLAYER_STATS_METRICS.map((m) => (
+              <button
+                key={m.id}
+                onClick={() => sendPlayerStats(true, m.id)}
+                className={`px-3 py-2.5 rounded-lg font-bold text-xs border transition ${
+                  playerStatsVisible && playerStatsMetric === m.id
+                    ? "bg-amber-950/80 border-amber-500 text-amber-300"
+                    : "bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700"
+                }`}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => sendPlayerStats(!playerStatsVisible, playerStatsMetric)}
+            className={`w-full py-3 px-4 rounded-lg font-bold text-sm border transition flex items-center justify-center gap-2 ${
+              playerStatsVisible
+                ? "bg-red-950/80 border-red-500 text-red-300"
+                : "bg-neutral-800 border-neutral-700 text-neutral-200 hover:bg-neutral-700"
+            }`}
+          >
+            <span>{playerStatsVisible ? "🚫" : "📊"}</span>
+            <span>{playerStatsVisible ? "Sembunyikan Player Stats" : "Tampilkan Player Stats"}</span>
+          </button>
         </div>
 
         {/* Quick Instructions */}
