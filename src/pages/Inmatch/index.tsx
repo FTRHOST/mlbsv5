@@ -2705,7 +2705,7 @@ function PlayerStatsOverlay({ metric }: { metric: PlayerStatsMetric }) {
                 />
               </div>
             </div>
-            <div className="size-[52px] shrink-0 rounded-full overflow-hidden border border-white bg-[#d9d9d9]" data-name="Hero Icon">
+            <div className="relative size-[52px] shrink-0 rounded-full overflow-hidden border border-white bg-[#d9d9d9]" data-name="Hero Icon">
               <HeroIcon heroId={row.heroId} fallback={imgEllipse3} size={52} />
             </div>
           </div>
