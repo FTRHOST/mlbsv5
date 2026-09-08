@@ -11,6 +11,8 @@ export interface BattleData {
   redTeamKillLord: number;
   blueTeamKillTurtle: number;
   redTeamKillTurtle: number;
+  turtleAlive: boolean;
+  lordAlive: boolean;
   blueTeamDestroyTuret: number;
   redTeamDestroyTuret: number;
 }

@@ -1,6 +1,7 @@
 import { getCachedUtf8String, getOffset, il2cppApi } from "../core/api.js";
 import type { BattleData } from "../types/match.js";
 import { debugLog } from "../utils/logger.js";
+import { isTurtleAlive, isLordAlive, refreshObjectives } from "./objective.js";
 import { getVersionInGame } from "./version.js";
 
 export let globalFightDataPtr: NativePointer | null = null;
@@ -156,6 +157,8 @@ export function extractMatchData(
     redTeamKillLord: 0,
     blueTeamKillTurtle: 0,
     redTeamKillTurtle: 0,
+    turtleAlive: false,
+    lordAlive: false,
     blueTeamDestroyTuret: 0,
     redTeamDestroyTuret: 0,
   };
@@ -163,6 +166,9 @@ export function extractMatchData(
   if (!globalFightDataPtr || globalFightDataPtr.isNull()) {
     tryFetchFightDataPtr(kShowFightData, kLogicManager);
   }
+
+  // Refresh status Turtle/Lord tiap tick.
+  try { refreshObjectives(); } catch (e) {}
 
   if (!globalFightDataPtr || globalFightDataPtr.isNull()) {
     return defaultBattle;
@@ -249,6 +255,8 @@ export function extractMatchData(
       redTeamKillLord: readVal("m_CampBKillLord", true),
       blueTeamKillTurtle: readVal("m_CampAKillTurtle", true),
       redTeamKillTurtle: readVal("m_CampBKillTurtle", true),
+      turtleAlive: isTurtleAlive(),
+      lordAlive: isLordAlive(),
       blueTeamDestroyTuret: readVal("m_CampAKillTower", true),
       redTeamDestroyTuret: readVal("m_CampBKillTower", true),
     };

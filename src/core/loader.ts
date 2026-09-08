@@ -13,6 +13,8 @@ export interface MappedClasses {
   kEndCtrl: NativePointer;
   kGameMain: NativePointer;
   kBattleManager: NativePointer;
+  kTortoise: NativePointer;
+  kBoss: NativePointer;
 }
 
 export function startStealthBootstrap(
@@ -129,6 +131,8 @@ function mapIl2CppClasses(): MappedClasses | null {
     kEndCtrl: NULL,
     kGameMain: NULL,
     kBattleManager: NULL,
+    kTortoise: NULL,
+    kBoss: NULL,
   };
 
   const classCount = Number(il2cppApi.image_get_class_count!(image));
@@ -150,6 +154,8 @@ function mapIl2CppClasses(): MappedClasses | null {
       if (name === "LogicBattleEndCtrl") classes.kEndCtrl = k;
       if (name === "GameMain") classes.kGameMain = k;
       if (name === "BattleManager") classes.kBattleManager = k;
+      if (name === "LogicTortoise") classes.kTortoise = k;
+      if (name === "LogicBoss") classes.kBoss = k;
     } catch (e) {}
   }
 
