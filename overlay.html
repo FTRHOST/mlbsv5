@@ -60,6 +60,42 @@
         }
         .player-row.blue { border-left: 4px solid #3498db; }
         .player-row.red { border-left: 4px solid #e74c3c; }
+        .kill-banner {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(90deg, #6a1b9a, #283593);
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 15px;
+            font-weight: bold;
+        }
+        .kill-banner.show { display: flex; }
+        .kill-banner img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #000;
+        }
+        .kill-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 12px;
+            max-height: 180px;
+            overflow: hidden;
+        }
+        .kill-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: #1a1a1a;
+            font-size: 12px;
+        }
+        .kill-row .trig { color: #f1c40f; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -82,15 +118,74 @@
         </div>
     </div>
 
+    <div id="kill-banner" class="kill-banner">
+        <img id="kill-banner-img" alt="" onerror="this.style.display='none'" />
+        <div id="kill-banner-text"></div>
+    </div>
+
     <h4>Players List</h4>
     <div id="players-list" class="players-list">
         <div style="font-size:12px; opacity:0.6; text-align:center; padding:10px;">Menunggu data...</div>
     </div>
 
+    <h4 style="margin-top:12px;">Kill Feed</h4>
+    <div id="kill-feed" class="kill-feed"></div>
+
     <script>
         const wsUrl = "ws://localhost:8080";
+        // Foto killer dari folder lokal berdasarkan guid. Sesuaikan pola
+        // nama file/ekstensi di sini bila berbeda.
+        const killerImgUrl = (guid) => `./heads/${guid}.png`;
         const statusEl = document.getElementById("connection-status");
         let ws;
+        const bannerQueue = [];
+        let bannerBusy = false;
+
+        function showKillBanner(ev) {
+            bannerQueue.push(ev);
+            if (!bannerBusy) nextKillBanner();
+        }
+
+        function nextKillBanner() {
+            const ev = bannerQueue.shift();
+            if (!ev) { bannerBusy = false; return; }
+            bannerBusy = true;
+            const banner = document.getElementById("kill-banner");
+            const img = document.getElementById("kill-banner-img");
+            const txt = document.getElementById("kill-banner-text");
+            const label = { FIRST_BLOOD: "FIRST BLOOD", TRIPLE_KILL: "TRIPLE KILL", MANIAC: "MANIAC", SAVAGE: "SAVAGE" }[ev.trigger] || ev.trigger;
+            img.style.display = "";
+            img.src = killerImgUrl(ev.killer && ev.killer.guid);
+            txt.innerText = `${label} — ${ev.killer ? ev.killer.name || "?" : "?"}`;
+            banner.classList.add("show");
+            setTimeout(() => {
+                banner.classList.remove("show");
+                setTimeout(nextKillBanner, 300);
+            }, 4000);
+        }
+
+        function addKillFeedRow(ev) {
+            const feed = document.getElementById("kill-feed");
+            const row = document.createElement("div");
+            row.className = "kill-row";
+            const kName = ev.killer ? (ev.killer.name || `#${ev.killer.guid}`) : "oleh tower/minion";
+            const dName = ev.deader ? (ev.deader.name || `#${ev.deader.guid}`) : "?";
+            const assists = (ev.assists || []).map(a => a.name || `#${a.guid}`).join(", ");
+            row.innerHTML = `
+                <span>${kName} ⚔ ${dName}${assists ? ` <span style="opacity:0.6">(+${assists})</span>` : ""}</span>
+                <span class="trig">${ev.trigger === "KILL" ? (ev.multKill > 1 ? `x${ev.multKill}` : "") : ev.trigger.replace(/_/g, " ")}</span>
+            `;
+            feed.prepend(row);
+            while (feed.children.length > 8) feed.removeChild(feed.lastChild);
+        }
+
+        function handleKillEvent(ev) {
+            if (!ev || !ev.deader) return;
+            addKillFeedRow(ev);
+            if (["FIRST_BLOOD", "TRIPLE_KILL", "MANIAC", "SAVAGE"].includes(ev.trigger)) {
+                showKillBanner(ev);
+            }
+        }
 
         function connect() {
             ws = new WebSocket(wsUrl);
@@ -105,6 +200,11 @@
                     let message = JSON.parse(event.data);
                     // server.py kadang forward payload sebagai string JSON ganda
                     if (typeof message === "string") message = JSON.parse(message);
+                    // Event kill: { type: "mlbb_kill_event", event: {...} }
+                    if (message && message.type === "mlbb_kill_event") {
+                        handleKillEvent(message.event);
+                        return;
+                    }
                     // Cek jika data dikirim dalam wrapper { type: "mlbb_live_data", payload: ... }
                     const payload = message.payload || message;
                     if (typeof payload === "string") return;

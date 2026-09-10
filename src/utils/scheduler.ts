@@ -1,6 +1,7 @@
 import { getCachedUtf8String, getMethodNative, getOffset, il2cppApi } from "../core/api.js";
 import type { MappedClasses } from "../core/loader.js";
 import { draftState, resetDraftState } from "../hooks/draft.js";
+import { getMapDraw } from "../hooks/mapdraw.js";
 import { extractMatchData, resetMatchDataState } from "../hooks/match.js";
 import { extractPlayerData } from "../hooks/player.js";
 import type { TelemetryPayload } from "../types/telemetry.js";
@@ -42,10 +43,12 @@ export function startTelemetryBroadcaster(classes: MappedClasses): void {
   const tick = () => {
     try {
       let state = 0;
+      let mgrInst: NativePointer | null = null;
       if (logicInstanceField && !logicInstanceField.isNull() && il2cppApi.field_static_get_value) {
         il2cppApi.field_static_get_value(logicInstanceField, persistentInstPtr);
         const inst = persistentInstPtr.readPointer();
         if (inst && !inst.isNull()) {
+          mgrInst = inst;
           if (offBattleState > 0) {
             state = inst.add(offBattleState).readInt();
           } else if (getBattleStateFunc) {
@@ -78,6 +81,7 @@ export function startTelemetryBroadcaster(classes: MappedClasses): void {
         gameState: state,
         draftPhase: draftState.currentDraftPhase,
         draftTimer: draftState.draftTimeLeft,
+        mapDraw: getMapDraw(mgrInst),
         players: players,
         Battle: battleData,
       };

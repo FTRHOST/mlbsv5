@@ -1,6 +1,8 @@
 import { startStealthBootstrap, type MappedClasses } from "./core/loader.js";
 import { setupDeathHook } from "./hooks/death.js";
 import { setupDraftHooks } from "./hooks/draft.js";
+import { setupKillHook } from "./hooks/kill.js";
+import { setupMapDrawHook } from "./hooks/mapdraw.js";
 import { setupMatchHooks } from "./hooks/match.js";
 import { setupObjectiveHook } from "./hooks/objective.js";
 import { setupPlayerHooks } from "./hooks/player.js";
@@ -16,6 +18,8 @@ startStealthBootstrap((classes: MappedClasses) => {
   setupDeathHook(classes.kBattleManager);
   setupObjectiveHook(classes.kLogicManager, classes.kTortoise, classes.kBoss);
   setupMatchHooks(classes.kEndCtrl, classes.kTimerBase, classes.kLogicFightData, classes.kLogicManager);
+  setupKillHook(classes.kCompetitionData, classes.kLogicManager);
+  setupMapDrawHook(classes.kLogicManager);
   setupPlayerHooks({
     kSystemData: classes.kSystemData,
     kLogicManager: classes.kLogicManager,

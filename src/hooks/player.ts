@@ -6,6 +6,7 @@ import {
   il2cppApi,
   readCsharpString,
 } from "../core/api.js";
+import type { KillParticipant } from "../types/kill.js";
 import { getDeathSpanMs, refreshDeathSpans } from "./death.js";
 import { playerBanMap } from "./draft.js";
 import { getMatchTimeMs } from "./match.js";
@@ -342,6 +343,135 @@ function isUltReady(logicPlayerPtr: NativePointer): boolean {
   }
 }
 
+// Identitas ringkas satu LogicPlayer untuk event kill (dipakai hook kill).
+// Stealth: hanya baca memori via offset cache tick (resolve mandiri bila kosong).
+export function describeFighter(
+  fighterPtr: NativePointer,
+): KillParticipant | null {
+  try {
+    if (!fighterPtr || fighterPtr.isNull() || !il2cppApi.object_get_class) {
+      return null;
+    }
+    const kFighter = il2cppApi.object_get_class(fighterPtr);
+    if (!kFighter || kFighter.isNull()) return null;
+
+    const pick = (
+      cached: number | undefined,
+      name: string,
+      fallback: number,
+    ): number => {
+      if (cached !== undefined && cached > 0) return cached;
+      try {
+        const off = getOffset(kFighter, name);
+        if (off > 0) return off;
+      } catch (e) {}
+      return fallback;
+    };
+
+    const offSyn = pick(
+      logicPlayerOffsets.m_SynFightData,
+      "m_SynFightData",
+      0xa50,
+    );
+    const offPD = pick(logicPlayerOffsets.m_PlayerData, "m_PlayerData", -1);
+    const offCfg = pick(logicPlayerOffsets.m_ConfigData, "m_ConfigData", -1);
+    const offPos = pick(logicPlayerOffsets.m_iPos, "m_iPos", 0x8e8);
+    const offGuid = pick(logicPlayerOffsets.m_uGuid, "m_uGuid", 0xb0);
+
+    let guid = 0;
+    if (offGuid > 0) {
+      try {
+        guid = fighterPtr.add(offGuid).readU32();
+      } catch (e) {}
+    }
+
+    let accId = "0";
+    let heroId = 0;
+    let name = "";
+    let synPos = 0;
+    if (offSyn > 0) {
+      try {
+        const synPtr = fighterPtr.add(offSyn).readPointer();
+        if (synPtr && !synPtr.isNull()) {
+          try {
+            accId = synPtr.add(0x10).readU64().toString();
+          } catch (e) {}
+          try {
+            const h = synPtr.add(0x28).readInt();
+            if (h > 0 && h <= 500) heroId = h;
+          } catch (e) {}
+          try {
+            const namePtr = synPtr.add(0x50).readPointer();
+            if (namePtr && !namePtr.isNull()) name = readCsharpString(namePtr);
+          } catch (e) {}
+          try {
+            synPos = synPtr.add(0x5c).readInt();
+          } catch (e) {}
+        }
+      } catch (e) {}
+    }
+
+    if (offPD > 0) {
+      try {
+        const pdPtr = fighterPtr.add(offPD).readPointer();
+        if (pdPtr && !pdPtr.isNull()) {
+          const kPd = il2cppApi.object_get_class!(pdPtr);
+          if (kPd && !kPd.isNull()) {
+            const offAcc = getOffset(kPd, "m_AccountId");
+            if (offAcc > 0) {
+              const readAcc = pdPtr.add(offAcc).readU64().toString();
+              if (readAcc && readAcc !== "0") accId = readAcc;
+            }
+          }
+        }
+      } catch (e) {}
+    }
+
+    if (offCfg > 0) {
+      try {
+        const cfgPtr = fighterPtr.add(offCfg).readPointer();
+        if (cfgPtr && !cfgPtr.isNull()) {
+          const kCfg = il2cppApi.object_get_class!(cfgPtr);
+          if (kCfg && !kCfg.isNull()) {
+            let offHeroId = getOffset(kCfg, "m_ID");
+            if (offHeroId <= 0) offHeroId = 0x14;
+            const h = cfgPtr.add(offHeroId).readInt();
+            if (h > 0 && h <= 500) heroId = h;
+          }
+        }
+      } catch (e) {}
+    }
+
+    let ipos = 0;
+    if (synPos >= 1 && synPos <= 10) {
+      ipos = synPos;
+    } else if (offPos > 0) {
+      try {
+        const p = fighterPtr.add(offPos).readInt();
+        if (p >= 1 && p <= 10) ipos = p;
+      } catch (e) {}
+    }
+    const team = ipos >= 1 && ipos <= 5 ? 1 : ipos >= 6 && ipos <= 10 ? 2 : 0;
+
+    return { guid, accId, name, heroid: heroId, ipos, team };
+  } catch (e) {
+    return null;
+  }
+}
+
+// Cache guid LogicPlayer -> identitas tick terakhir (nama + accId dari
+// RoomData, bukan dari syn yang null di build ini). Dibangun ulang tiap tick.
+const guidIdentityCache = new Map<number, KillParticipant>();
+
+export function lookupFighterByGuid(guid: number): KillParticipant | null {
+  if (!guid) return null;
+  try {
+    return guidIdentityCache.get(guid) ?? null;
+  } catch (e) {
+    return null;
+  }
+}
+
 // Normalisasi iPos RoomData ke slot global 1..10.
 // Mode vs-AI memakai penomoran per-camp 0..4 (0 = pemain pertama,
 // biasanya self): blue 0..4 -> slot 1..5, red 0..4 -> slot 6..10.
@@ -426,6 +556,8 @@ export function extractPlayerData(
   try {
     refreshDeathSpans();
   } catch (e) {}
+  // Bangun ulang cache identitas guid -> pemain tiap tick untuk hook kill.
+  guidIdentityCache.clear();
   if (!getInfoFunc) return [];
 
   try {
@@ -1462,6 +1594,24 @@ export function extractPlayerData(
                         .readInt();
                   } catch (eKda) {}
                 }
+
+                // Catat identitas untuk lookup hook kill (by guid).
+                try {
+                  const offG = logicPlayerOffsets.m_uGuid ?? -1;
+                  if (offG > 0) {
+                    const g = logicPlayerPtr.add(offG).readU32();
+                    if (g > 0) {
+                      guidIdentityCache.set(g, {
+                        guid: g,
+                        accId: targetPlayer.id,
+                        name: targetPlayer.name,
+                        heroid: targetPlayer.heroid,
+                        ipos: targetPlayer.ipos,
+                        team: targetPlayer.team,
+                      });
+                    }
+                  }
+                } catch (e) {}
               }
             } catch (eEntry) {}
           }
