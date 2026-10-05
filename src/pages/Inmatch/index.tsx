@@ -1,7 +1,10 @@
 import { appConfig } from "@/config";
 import { useState, useEffect, useRef } from "react";
-import { useRoomData } from "../../hooks/useRoomData";
+import { useRoomData, KILL_EVENT_CHANNEL, getKillEventLabel } from "../../hooks/useRoomData";
+import type { MlbbKillEvent } from "../../hooks/useRoomData";
+import { useDisplayTeamNames } from "../../hooks/useTeamNames";
 import { useMatchScore } from "../../hooks/useMatchScore";
+import UserAvatar from "../../components/UserAvatar";
 import { motion, AnimatePresence } from "motion/react";
 import svgPaths from "./svg-oceaimow7b";
 import imgEllipse3 from "./b7391c4e75d2d34b9c3df0dcbcaf28f0ac62388f.png";
@@ -235,7 +238,7 @@ function UserInfo1() {
   return (
     <div className="col-1 grid-rows-[max-content] inline-grid ml-0 mt-[21px] place-items-start relative row-1 w-[44.12%]" data-name="User Info">
       <div className="col-1 h-[67px] ml-0 mt-0 relative row-1 w-[74.67%]" data-name="User Avatar">
-        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgUserAvatar} />
+        <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={imgUserAvatar} />
       </div>
       <div className="col-1 h-[13px] ml-0 mt-[54px] relative row-1 w-full">
         <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 74.9998 13">
@@ -489,7 +492,7 @@ function UserInfo3() {
   return (
     <div className="col-1 grid-rows-[max-content] inline-grid ml-0 mt-[21px] place-items-start relative row-1 w-[44.12%]" data-name="User Info">
       <div className="col-1 h-[67px] ml-0 mt-0 relative row-1 w-[74.67%]" data-name="User Avatar">
-        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgUserAvatar} />
+        <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={imgUserAvatar} />
       </div>
       <div className="col-1 h-[13px] ml-0 mt-[54px] relative row-1 w-full">
         <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 74.9998 13">
@@ -824,11 +827,11 @@ function DynamicHealthBar({ hp, maxHp }: { hp: number; maxHp: number }) {
   );
 }
 
-function DynamicBlueUserInfo({ kill, dead, assist, level }: { kill: number; dead: number; assist: number; level: number }) {
+function DynamicBlueUserInfo({ kill, dead, assist, level, userId }: { kill: number; dead: number; assist: number; level: number; userId?: string | number }) {
   return (
     <div className="col-1 grid-rows-[max-content] inline-grid ml-0 mt-[21px] place-items-start relative row-1 w-[44.12%]" data-name="User Info">
-      <div className="col-1 h-[67px] ml-0 mt-0 relative row-1 w-[74.67%]" data-name="User Avatar">
-        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgUserAvatar} />
+      <div className="col-1 h-[67px] ml-0 mt-0 relative row-1 w-[74.67%] overflow-hidden" data-name="User Avatar">
+        <UserAvatar userId={userId} fallback={imgUserAvatar} className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" />
       </div>
       <div className="col-1 h-[13px] ml-0 mt-[54px] relative row-1 w-full">
         <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 74.9998 13">
@@ -851,11 +854,11 @@ function DynamicBlueUserInfo({ kill, dead, assist, level }: { kill: number; dead
   );
 }
 
-function DynamicRedUserInfo({ kill, dead, assist, level }: { kill: number; dead: number; assist: number; level: number }) {
+function DynamicRedUserInfo({ kill, dead, assist, level, userId }: { kill: number; dead: number; assist: number; level: number; userId?: string | number }) {
   return (
     <div className="col-1 grid-cols-[max-content] grid-rows-[max-content] inline-grid ml-[91.96px] mt-[20px] place-items-start relative row-1" data-name="User Info">
-      <div className="col-1 h-[67px] ml-[28.04px] mt-0 relative row-1 w-[56px]" data-name="User Avatar">
-        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgUserAvatar} />
+      <div className="col-1 h-[67px] ml-[28.04px] mt-0 relative row-1 w-[56px] overflow-hidden" data-name="User Avatar">
+        <UserAvatar userId={userId} fallback={imgUserAvatar} className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" />
       </div>
       <div className="col-1 flex h-[13px] items-center justify-center ml-[16.04px] mt-[55px] relative row-1 w-[69px]">
         <div className="-scale-y-100 flex-none rotate-180">
@@ -1059,70 +1062,65 @@ function useSideItemVisible(): boolean {
 }
 
 type SideMediaSlot = "a" | "b";
-type SideMediaData = { bg: string; photos: string[] };
 
-const SIDE_MEDIA_KEYS: Record<SideMediaSlot, string> = {
-  a: "mlbs_side_media_a",
-  b: "mlbs_side_media_b",
+// Foto scoreboard dibaca dari folder /public (tanpa localStorage / upload).
+// Taruh file di public/assets/scoreboard/ dengan nama tetap:
+//   slot A (kotak emas): a-1 … a-5   |   slot B (kolom kanan): b-1 … b-5
+// Ekstensi yang didukung: .png, .jpg, .jpeg, .webp
+// 1 file = tampil statis, >1 file = slideshow fade otomatis.
+// Menambah/menghapus file cukup refresh browser source (tanpa rebuild).
+const SIDE_MEDIA_DIR = "/assets/scoreboard";
+const SIDE_MEDIA_MAX_FILES = 5;
+const SIDE_MEDIA_EXTS = ["png", "jpg", "jpeg", "webp"];
+
+const SIDE_MEDIA_FALLBACK_BG: Record<SideMediaSlot, string> = {
+  a: "#e8d367",
+  b: "#d9d9d9",
 };
 
-const SIDE_MEDIA_DEFAULTS: Record<SideMediaSlot, SideMediaData> = {
-  a: { bg: "#e8d367", photos: [] },
-  b: { bg: "#d9d9d9", photos: [] },
-};
+function probeImage(src: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = src;
+  });
+}
 
-const globalSideMedia: Record<SideMediaSlot, SideMediaData> = {
-  a: { ...SIDE_MEDIA_DEFAULTS.a, photos: [] },
-  b: { ...SIDE_MEDIA_DEFAULTS.b, photos: [] },
-};
-const sideMediaListeners = new Set<(slot: SideMediaSlot, data: SideMediaData) => void>();
-
-function readSideMedia(slot: SideMediaSlot): SideMediaData {
-  try {
-    const raw = localStorage.getItem(SIDE_MEDIA_KEYS[slot]);
-    if (raw) {
-      const parsed = JSON.parse(raw) as Partial<SideMediaData>;
-      return {
-        bg: typeof parsed.bg === "string" && parsed.bg ? parsed.bg : SIDE_MEDIA_DEFAULTS[slot].bg,
-        photos: Array.isArray(parsed.photos) ? parsed.photos.filter((p) => typeof p === "string") : [],
-      };
+async function detectScoreboardPhotos(slot: SideMediaSlot): Promise<string[]> {
+  const found: string[] = [];
+  for (let i = 1; i <= SIDE_MEDIA_MAX_FILES; i++) {
+    for (const ext of SIDE_MEDIA_EXTS) {
+      const src = `${SIDE_MEDIA_DIR}/${slot}-${i}.${ext}`;
+      // eslint-disable-next-line no-await-in-loop
+      if (await probeImage(src)) {
+        found.push(src);
+        break;
+      }
     }
-  } catch {
-    /* noop */
   }
-  return { ...SIDE_MEDIA_DEFAULTS[slot], photos: [] };
+  return found;
 }
 
-function setGlobalSideMedia(slot: SideMediaSlot, data: SideMediaData) {
-  globalSideMedia[slot] = data;
-  sideMediaListeners.forEach((fn) => fn(slot, data));
-}
-
-function useSideMedia(slot: SideMediaSlot): SideMediaData {
-  const [data, setData] = useState<SideMediaData>(globalSideMedia[slot]);
+function useScoreboardPhotos(slot: SideMediaSlot): string[] {
+  const [photos, setPhotos] = useState<string[]>([]);
   useEffect(() => {
-    const stored = readSideMedia(slot);
-    const cur = globalSideMedia[slot];
-    if (stored.bg !== cur.bg || JSON.stringify(stored.photos) !== JSON.stringify(cur.photos)) {
-      setGlobalSideMedia(slot, stored);
-    } else {
-      setData(stored);
-    }
-    const listener = (s: SideMediaSlot, d: SideMediaData) => {
-      if (s === slot) setData(d);
-    };
-    sideMediaListeners.add(listener);
+    let cancelled = false;
+    detectScoreboardPhotos(slot).then((found) => {
+      if (!cancelled) setPhotos(found);
+    });
     return () => {
-      sideMediaListeners.delete(listener);
+      cancelled = true;
     };
   }, [slot]);
-  return data;
+  return photos;
 }
 
 const SIDE_MEDIA_SLIDE_MS = 5000;
 
 function SideMedia({ slot, className }: { slot: SideMediaSlot; className: string }) {
-  const { bg, photos } = useSideMedia(slot);
+  const photos = useScoreboardPhotos(slot);
+  const bg = SIDE_MEDIA_FALLBACK_BG[slot];
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -1254,7 +1252,7 @@ function SingleBluePlayerSideCard({ ipos }: { ipos: number }) {
         </div>
 
         {/* User Info (Avatar / KDA / Level) */}
-        <DynamicBlueUserInfo kill={kill} dead={dead} assist={assist} level={level} />
+        <DynamicBlueUserInfo kill={kill} dead={dead} assist={assist} level={level} userId={player?.id} />
       </div>
 
       <div className={`bg-[#d9d9d9] relative shrink-0 size-[47px] overflow-hidden rounded${showSideItem ? "" : " invisible"}`} data-name="Item">
@@ -2027,7 +2025,7 @@ function SingleRedPlayerSideCard({ ipos }: { ipos: number }) {
         </div>
 
         {/* User Info (Avatar / KDA / Level) */}
-        <DynamicRedUserInfo kill={kill} dead={dead} assist={assist} level={level} />
+        <DynamicRedUserInfo kill={kill} dead={dead} assist={assist} level={level} userId={player?.id} />
       </div>
     </div>
   );
@@ -2225,15 +2223,8 @@ function GoldDiff() {
 }
 
 function Container58() {
-  const [teamName, setTeamName] = useState("blue team");
-  const roomData = useRoomData();
-  useEffect(() => {
-    const json = roomData;
-        const value = json?.blue_team_name;
-        if (typeof value === "string") {
-      setTeamName(value);
-    }
-  }, [roomData]);
+  // Nama biru: manual rooms menang bila bukan placeholder, else otomatis dari team_mappings.
+  const teamName = useDisplayTeamNames().blue || "blue team";
 
   return (
     <div className="h-[30px] relative shrink-0 w-full" data-name="Container">
@@ -2258,7 +2249,8 @@ function Container52() {
 function BlueTeamScore() {
   const [scoreData, setScoreData] = useState({ score: 0, requiredWins: 3 });
   const roomData = useRoomData();
-  const matchScore = useMatchScore(roomData?.blue_team_name, roomData?.red_team_name);
+  const teamNames = useDisplayTeamNames();
+  const matchScore = useMatchScore(teamNames.blue || roomData?.blue_team_name, teamNames.red || roomData?.red_team_name);
 
   useEffect(() => {
     const score = matchScore.blueScore;
@@ -2303,7 +2295,8 @@ function BlueTeamScore() {
 function BlueTeamScore1() {
   const [scoreData, setScoreData] = useState({ score: 0, requiredWins: 3 });
   const roomData = useRoomData();
-  const matchScore = useMatchScore(roomData?.blue_team_name, roomData?.red_team_name);
+  const teamNames = useDisplayTeamNames();
+  const matchScore = useMatchScore(teamNames.blue || roomData?.blue_team_name, teamNames.red || roomData?.red_team_name);
 
   useEffect(() => {
     const score = matchScore.redScore;
@@ -2622,15 +2615,8 @@ function GoldDiff1() {
 }
 
 function Container67() {
-  const [teamName, setTeamName] = useState("red teeam");
-  const roomData = useRoomData();
-  useEffect(() => {
-    const json = roomData;
-    const value = json?.red_team_name;
-    if (typeof value === "string") {
-      setTeamName(value);
-    }
-  }, [roomData]);
+  // Nama merah: manual rooms menang bila bukan placeholder, else otomatis dari team_mappings.
+  const teamName = useDisplayTeamNames().red || "red team";
 
   return (
     <div className="h-[36px] relative shrink-0 w-full" data-name="Container">
@@ -2748,20 +2734,43 @@ function formatGameVersion(raw: unknown): string | null {
   return parts.slice(0, 3).join(".");
 }
 
+const MAP_DRAW_LABELS: Record<number, string> = {
+  1: "BROKEN WALLS",
+  2: "DANGEROUS GRASS",
+  3: "FLYING CLOUD",
+  4: "EXPANDING RIVER",
+  12: "VISION REVEAL",
+  15: "HEALING TURTLE",
+  16: "GOLDEN TURRET"
+};
+
+function getMapDrawLabel(raw: unknown): string | null {
+  if (typeof raw !== "number" || Number.isNaN(raw)) return null;
+  if (MAP_DRAW_LABELS[raw] !== undefined) return MAP_DRAW_LABELS[raw];
+  return `MAP ${raw}`;
+}
+
 function Container69() {
   const roomData = useRoomData();
   const battle = roomData?.battle ?? roomData?.Battle;
   const version = formatGameVersion(battle?.versionInGame);
+  const mapDrawLabel = getMapDrawLabel(roomData?.mapDraw);
 
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-[162px]" data-name="Container">
       <SideMedia slot="b" className="h-[110px] w-full" />
       <div className="bg-[#d69345] h-[24px] relative shrink-0 w-full" data-name="Rounded Rectangle" />
-      <div className="bg-gradient-to-r from-[rgba(115,115,115,0)] h-[18px] relative shrink-0 to-white w-full" data-name="Rounded Rectangle" />
-      {version && (
-        <div className="bg-[#e8d367] h-[16px] relative shrink-0 w-full flex items-center justify-center" data-name="Game Version">
+      <div className="bg-gradient-to-r from-black/80 h-[18px] relative shrink-0 to-transparent w-full flex items-center justify-end" data-name="Rounded Rectangle">
+        {version && (
+          <p className="font-['Inter:Bold',sans-serif] font-bold text-white text-[11px] leading-none text-left m-0 pr-[6px]">
+            PATCH {version}
+          </p>
+        )}
+      </div>
+      {mapDrawLabel && (
+        <div className="bg-[#e8d367] h-[16px] relative shrink-0 w-full flex items-center justify-center" data-name="Map Draw">
           <p className="font-['Inter:Bold',sans-serif] font-bold text-black text-[11px] leading-none text-center m-0">
-            ver. {version}
+            {mapDrawLabel}
           </p>
         </div>
       )}
@@ -3672,6 +3681,132 @@ function LordSpawnedNotification() {
   );
 }
 
+type InfoKillData = {
+  playerName: string;
+  killLabel: string;
+  heroId: number;
+  key?: string;
+};
+
+/**
+ * Map a live mlbb_kill_event to overlay data.
+ * Filter: only FIRST BLOOD (firstBlood) and multi-kill >= 2 display.
+ * Single kills return null (skipped). Name shown as-is.
+ */
+function mapKillEventToInfoKill(event: MlbbKillEvent | null | undefined): InfoKillData | null {
+  if (!event) return null;
+  const killLabel = getKillEventLabel(event);
+  if (!killLabel) return null;
+  const killer = event.killer || {};
+  const rawName = typeof killer.name === "string" ? killer.name : "";
+  const playerName = rawName || (Number(killer.ipos) > 0 ? `Player ${killer.ipos}` : "NAMA");
+  const heroId = Number(killer.heroid) || 0;
+  return { playerName, killLabel, heroId };
+}
+
+function getKillEventKey(event: MlbbKillEvent): string {
+  const k = event.killer || {};
+  const d = event.deader || {};
+  return `${event.t ?? "-"}-${k.guid ?? "-"}-${d.guid ?? "-"}-${event.multKill ?? "-"}-${event.firstBlood ? "fb" : ""}`;
+}
+
+const INFOKILL_LABELS = [
+  "FIRST BLOOD",
+  "DOUBLE KILL",
+  "TRIPLE KILL",
+  "MANIAC",
+  "SAVAGE",
+  "SHUT DOWN",
+  "UNSTOPPABLE",
+  "GODLIKE",
+];
+
+function HeroPortrait({ heroId }: { heroId: number }) {
+  const [failed, setFailed] = useState(false);
+  const src = heroId > 0 ? `/assets/heroes-sa/${heroId}.webp` : "";
+  if (!src || failed) {
+    return (
+      <img
+        alt=""
+        className="absolute inset-0 size-full object-cover object-top pointer-events-none"
+        src={imgImageHero}
+      />
+    );
+  }
+  return (
+    <img
+      alt=""
+      className="absolute inset-0 size-full object-cover object-top pointer-events-none"
+      src={src}
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
+function InfoKillOverlay({ playerName, killLabel, heroId }: InfoKillData) {
+  return (
+    <div className="infokill relative w-[920px] h-[168px]" data-name="infokill">
+      {/* bg-02: lapisan belakang (offset, lebih gelap) */}
+      <div
+        className="bg-02 absolute w-[422px] h-[64px] left-[150px] top-[104px] bg-[#533920] shadow-[0_4px_16px_rgba(0,0,0,0.45)]"
+        data-name="bg-02"
+        style={{ transform: "skewX(-12deg)" }}
+      />
+      {/* bg-01: lapisan depan */}
+      <div
+        className="bg-01 absolute w-[416px] h-[64px] left-[172px] top-[76px] bg-[#d69345] shadow-[0_4px_16px_rgba(0,0,0,0.35)]"
+        data-name="bg-01"
+        style={{ transform: "skewX(-12deg)" }}
+      />
+      {/* label kill (DOUBLE KILL, dll) */}
+      <div
+        className="infokill2 absolute left-[172px] top-[76px] w-[416px] h-[64px] flex items-center justify-center text-center text-white font-['Koulen:Regular',sans-serif] text-[48px] leading-[48px] tracking-[0.08em] z-10 pointer-events-none"
+        data-name="infokill-label"
+        style={{ textShadow: "0 2px 0 rgba(0,0,0,0.35), 0 0 12px rgba(0,0,0,0.4)" }}
+      >
+        <p className="m-0 truncate px-4">{killLabel}</p>
+      </div>
+      {/* nama player */}
+      <div
+        className="nama-player absolute left-[150px] top-[104px] w-[422px] h-[64px] flex items-end justify-center text-center text-white font-['Koulen:Regular',sans-serif] text-[24px] leading-[24px] tracking-[0.12em] z-10 pointer-events-none"
+        data-name="nama-player"
+        style={{ textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
+      >
+        <p className="m-0 truncate px-6">{playerName}</p>
+      </div>
+      {/* hero portrait */}
+      <div
+        className="hero-potrait absolute left-[57px] top-0 w-[125px] h-[161px] overflow-hidden z-20 bg-[#1a1a1a] border-2 border-[#e8d367] shadow-[0_4px_16px_rgba(0,0,0,0.5)]"
+        data-name="hero-potrait"
+        style={{ transform: "skewX(-6deg)" }}
+      >
+        <div className="absolute inset-0" style={{ transform: "skewX(6deg) scale(1.12)" }}>
+          <HeroPortrait heroId={heroId} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InfoKillNotification({ data }: { data: InfoKillData }) {
+  return (
+    <div
+      className="absolute left-[1200px] top-[829px] -translate-x-1/2 z-50 pointer-events-none"
+      data-name="Info Kill Notification"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.85, y: 24 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 1.08, y: -12 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+      >
+                <InfoKillOverlay {...data} />
+
+      </motion.div>
+    </div>
+  );
+}
+
 
 function Container92() {
   return (
@@ -4525,8 +4660,98 @@ export default function Inmatch() {
   const [activeOverlay, setActiveOverlay] = useState<"none" | "emblem" | "item">("none");
   const [showTurtle, setShowTurtle] = useState(false);
   const [showLord, setShowLord] = useState(false);
+  const [infoKill, setInfoKill] = useState<InfoKillData | null>(null);
+  const infoKillTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const roomData = useRoomData();
+
+  const showInfoKillFor3s = (data: InfoKillData) => {
+    if (infoKillTimeout.current) clearTimeout(infoKillTimeout.current);
+    setInfoKill(data);
+    infoKillTimeout.current = setTimeout(() => setInfoKill(null), 3000);
+  };
+
+  // Manual / simulasi trigger InfoKill dari Control Panel
+  useEffect(() => {
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel("mlbs_overlay_control");
+      bc.onmessage = (event) => {
+        if (event.data?.type === "TRIGGER_INFOKILL") {
+          const ipos = Number(event.data?.ipos) || 0;
+          const killLabel =
+            typeof event.data?.killLabel === "string" && event.data.killLabel
+              ? String(event.data.killLabel).toUpperCase()
+              : "DOUBLE KILL";
+          const players = Array.isArray(roomData?.players) ? roomData.players : [];
+          const player = ipos > 0 ? findPlayer(players, ipos) : null;
+          const heroId =
+            Number(event.data?.heroId) ||
+            Number(player?.heroid || player?.SelHeroID) ||
+            0;
+          const playerName =
+            (typeof event.data?.playerName === "string" && event.data.playerName.trim()
+              ? event.data.playerName.trim()
+              : player?.name) ||
+            (ipos > 0 ? `Player ${ipos}` : "NAMA");
+          showInfoKillFor3s({ playerName, killLabel, heroId, key: `manual-${Date.now()}` });
+        }
+      };
+    } catch {
+      bc = null;
+    }
+    return () => {
+      // NOTE: jangan clearTimeout di sini — effect ini re-run setiap roomData
+      // berubah (live telemetry tick) dan akan membunuh timer hide 3 detik.
+      try {
+        bc?.close();
+      } catch {
+        /* noop */
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomData]);
+
+  // Auto trigger InfoKill dari live mlbb_kill_event (ganti langsung + dedupe)
+  const lastKillKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    const handleKillEvent = (event: MlbbKillEvent | null | undefined) => {
+      if (!event) return;
+      const key = getKillEventKey(event);
+      if (lastKillKeyRef.current === key) return;
+      lastKillKeyRef.current = key;
+      const data = mapKillEventToInfoKill(event);
+      if (data) showInfoKillFor3s({ ...data, key });
+    };
+
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel(KILL_EVENT_CHANNEL);
+      bc.onmessage = (e) => {
+        const evt = e.data?.event ?? e.data;
+        handleKillEvent(evt as MlbbKillEvent);
+      };
+    } catch {
+      bc = null;
+    }
+    const handleCustom = (e: Event) => {
+      handleKillEvent((e as CustomEvent).detail as MlbbKillEvent);
+    };
+    window.addEventListener("mlbs_kill_event", handleCustom);
+
+    return () => {
+      try {
+        bc?.close();
+      } catch {
+        /* noop */
+      }
+      window.removeEventListener("mlbs_kill_event", handleCustom);
+      // Cleanup timer hide hanya saat unmount (effect ini mount sekali).
+      if (infoKillTimeout.current) clearTimeout(infoKillTimeout.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const prevTurtleAlive = useRef<boolean | null>(null);
   const prevLordAlive = useRef<boolean | null>(null);
 
@@ -4645,21 +4870,6 @@ export default function Inmatch() {
           /* noop */
         }
         setGlobalSideItemVisible(v);
-      } else if (event.data?.type === "SET_SIDE_MEDIA") {
-        const slot = event.data.slot as SideMediaSlot;
-        if (slot === "a" || slot === "b") {
-          const d = event.data.data as Partial<SideMediaData> | undefined;
-          const next: SideMediaData = {
-            bg: typeof d?.bg === "string" && d.bg ? d.bg : SIDE_MEDIA_DEFAULTS[slot].bg,
-            photos: Array.isArray(d?.photos) ? d.photos.filter((p) => typeof p === "string") : [],
-          };
-          try {
-            localStorage.setItem(SIDE_MEDIA_KEYS[slot], JSON.stringify(next));
-          } catch {
-            /* noop */
-          }
-          setGlobalSideMedia(slot, next);
-        }
       }
     };
 
@@ -4783,6 +4993,11 @@ export default function Inmatch() {
             <LordSpawnedNotification />
           </motion.div>
         )}
+      </AnimatePresence>
+
+      {/* Info Kill Notification (simulasi via Control Panel: TRIGGER_INFOKILL) */}
+      <AnimatePresence>
+        {infoKill && <InfoKillNotification key={`infokill-${infoKill.key || `${infoKill.playerName}-${infoKill.killLabel}`}`} data={infoKill} />}
       </AnimatePresence>
     </div>
   );

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './useRoomData';
-import { appConfig } from '../config';
 
 export function useHeroStats(heroId: number) {
   const [stats, setStats] = useState({ winRate: "0%", pick: 0, ban: 0, heroName: "UNKNOWN" });
@@ -29,8 +28,7 @@ export function useHeroStats(heroId: number) {
         if (supabase) {
           const { data, error } = await supabase
             .from('stats')
-            .select('data')
-            .eq('operator_id', appConfig.operatorId);
+            .select('data');
             
           if (error) throw error;
           

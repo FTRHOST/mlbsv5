@@ -1,0 +1,653 @@
+.match-report,
+.match-report * {
+  box-sizing: border-box;
+}
+.match-report {
+  display: flex;
+  flex-direction: column;
+  gap: 119px;
+  align-items: center;
+  justify-content: flex-start;
+  height: 1080px;
+  position: relative;
+}
+.header {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  flex-shrink: 0;
+  height: 220px;
+  position: relative;
+}
+.bg-team-logo {
+  flex-shrink: 0;
+  width: 74px;
+  height: 74px;
+  position: relative;
+  aspect-ratio: 1;
+}
+.bg-team-logo2 {
+  background: #d9d9d9;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  right: 0%;
+  left: 0%;
+  bottom: 0%;
+  top: 0%;
+}
+.team-name-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  width: 379px;
+  position: relative;
+}
+.team-name {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.win-or-defeat {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.blue-team-score {
+  background: #d69345;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 99px;
+  height: 99px;
+  position: relative;
+  aspect-ratio: 1;
+}
+.map-draw-name {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 64px;
+  line-height: 0px;
+  font-weight: 700;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.intech-fest-title {
+  flex-shrink: 0;
+  width: 482px;
+  height: 77px;
+  position: relative;
+}
+.intech-fest-title2 {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  position: absolute;
+  right: 23.77%;
+  left: 23.74%;
+  width: 52.49%;
+  bottom: 19.48%;
+  top: 18.18%;
+  height: 62.34%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.red-team-score {
+  background: #533920;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 99px;
+  height: 99px;
+  position: relative;
+  aspect-ratio: 1;
+}
+.body {
+  display: flex;
+  flex-direction: row;
+  gap: 0px;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  flex-shrink: 0;
+  position: relative;
+}
+.blue-team-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 29px;
+  align-items: flex-start;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 684px;
+  position: relative;
+}
+.blue-hero-stats {
+  display: flex;
+  flex-direction: row;
+  gap: 0px;
+  align-items: center;
+  justify-content: flex-start;
+  align-self: stretch;
+  flex-shrink: 0;
+  height: 101.25px;
+  position: relative;
+}
+.hero-icon {
+  flex-shrink: 0;
+  width: 101.25px;
+  height: 101.25px;
+  position: relative;
+  aspect-ratio: 1;
+}
+.hero-icon2 {
+  width: 101.25px;
+  height: 101.25px;
+  position: absolute;
+  left: 50%;
+  translate: -50% -50%;
+  top: 50%;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.user-avatar-component {
+  background: #d69345;
+  flex-shrink: 0;
+  width: 102px;
+  height: 101.25px;
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 102/101.25;
+}
+.user-avatar {
+  width: 62.25px;
+  height: 101.25px;
+  position: absolute;
+  left: 50%;
+  translate: -50% -50%;
+  top: 50%;
+  object-fit: cover;
+}
+.statistik {
+  background: #e8d367;
+  flex-shrink: 0;
+  width: 480.75px;
+  height: 101.25px;
+  position: relative;
+  overflow: hidden;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 480.75px;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+}
+.header-info-player {
+  display: flex;
+  flex-direction: row;
+  gap: 12.75px;
+  align-items: center;
+  justify-content: flex-start;
+  align-self: stretch;
+  flex-shrink: 0;
+  position: relative;
+}
+.role {
+  flex-shrink: 0;
+  width: 49.5px;
+  height: 49.5px;
+  position: relative;
+  overflow: visible;
+  aspect-ratio: 1;
+}
+.username {
+  color: #000000;
+  text-align: left;
+  font-family: "Inter-Medium", sans-serif;
+  font-size: 24px;
+  line-height: 0px;
+  font-weight: 500;
+  position: relative;
+  width: 305.25px;
+  height: 49.5px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.level-container {
+  background: #e0c331;
+  flex-shrink: 0;
+  width: 100.5px;
+  height: 49.5px;
+  position: relative;
+  overflow: hidden;
+}
+.level {
+  color: #000000;
+  text-align: center;
+  font-family: "Inter-Medium", sans-serif;
+  font-size: 24px;
+  line-height: 0px;
+  font-weight: 500;
+  position: absolute;
+  left: 50%;
+  translate: -50% -50%;
+  top: 50%;
+  width: 100.5px;
+  height: 49.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.statistic-container {
+  padding: 0px 16.5px 0px 16.5px;
+  display: flex;
+  flex-direction: row;
+  gap: 56.25px;
+  align-items: center;
+  justify-content: flex-start;
+  align-self: stretch;
+  flex-shrink: 0;
+  height: 51.75px;
+  position: relative;
+}
+.kda {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  width: 55.5px;
+  position: relative;
+}
+.username2 {
+  color: #000000;
+  text-align: center;
+  font-family: "Inter-Medium", sans-serif;
+  font-size: 12px;
+  line-height: 0px;
+  font-weight: 500;
+  position: relative;
+  align-self: stretch;
+  height: 15.75px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.statistics {
+  color: #000000;
+  text-align: center;
+  font-family: "Inter-Medium", sans-serif;
+  font-size: 18px;
+  line-height: 0px;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  position: relative;
+  align-self: stretch;
+  height: 9.75px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gold-earn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  width: 69.75px;
+  position: relative;
+}
+.item-container {
+  display: flex;
+  flex-direction: row;
+  gap: 2.25px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  width: 320.25px;
+  height: 51.75px;
+  position: relative;
+}
+.item {
+  flex-shrink: 0;
+  width: 30.75px;
+  height: 30.75px;
+  position: relative;
+}
+.item2 {
+  background: #d9d9d9;
+  border-style: solid;
+  border-color: #533920;
+  border-width: 2.25px;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  right: 0%;
+  left: 0%;
+  bottom: 0%;
+  top: 0%;
+}
+.item3 {
+  background: #d9d9d9;
+  border-style: solid;
+  border-color: #533920;
+  border-width: 2.25px;
+  flex-shrink: 0;
+  width: 30.75px;
+  height: 30.75px;
+  position: relative;
+}
+.role2 {
+  flex-shrink: 0;
+  width: 49.5px;
+  height: 49.5px;
+  position: relative;
+  overflow: visible;
+  aspect-ratio: 1;
+}
+.role3 {
+  flex-shrink: 0;
+  width: 49.5px;
+  height: 49.5px;
+  position: relative;
+  overflow: visible;
+  aspect-ratio: 1;
+}
+.role4 {
+  flex-shrink: 0;
+  width: 49.5px;
+  height: 49.5px;
+  position: relative;
+  overflow: visible;
+  aspect-ratio: 1;
+}
+.role5 {
+  flex-shrink: 0;
+  width: 49.5px;
+  height: 49.5px;
+  position: relative;
+  overflow: visible;
+  aspect-ratio: 1;
+}
+.stats-diff-end {
+  display: flex;
+  flex-direction: column;
+  gap: 52.8px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  width: 479.4px;
+  position: relative;
+}
+.frame-19 {
+  display: flex;
+  flex-direction: column;
+  gap: 7.8px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 208.2px;
+  position: relative;
+}
+.game-time-tittle {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 24px;
+  line-height: 0px;
+  font-weight: 700;
+  position: relative;
+  align-self: stretch;
+  height: 37.2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.game-time {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 57.60000228881836px;
+  line-height: 0px;
+  font-weight: 700;
+  position: relative;
+  align-self: stretch;
+  height: 37.2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gold-container-diff {
+  display: flex;
+  flex-direction: row;
+  gap: 21px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+.blue-team {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 28.80000114440918px;
+  line-height: 0px;
+  font-weight: 700;
+  position: relative;
+  width: 205.2px;
+  height: 65.4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gold {
+  flex-shrink: 0;
+  width: 60px;
+  height: 65.18px;
+  position: relative;
+  overflow: visible;
+  aspect-ratio: 60/65.18;
+}
+.red-team {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 28.80000114440918px;
+  line-height: 0px;
+  font-weight: 700;
+  position: relative;
+  width: 205.2px;
+  height: 65.4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.turet-container-diff {
+  display: flex;
+  flex-direction: row;
+  gap: 21px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+.turret {
+  flex-shrink: 0;
+  width: 60px;
+  height: 67.92px;
+  position: relative;
+  overflow: visible;
+  aspect-ratio: 60/67.92;
+}
+.lord-container-diff {
+  display: flex;
+  flex-direction: row;
+  gap: 21px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+.lord {
+  flex-shrink: 0;
+  width: 60px;
+  height: 73.51px;
+  position: relative;
+  overflow: visible;
+  aspect-ratio: 60/73.51;
+}
+.turtle-container-diff {
+  display: flex;
+  flex-direction: row;
+  gap: 21px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+.turtle {
+  flex-shrink: 0;
+  width: 60px;
+  height: 65.54px;
+  position: relative;
+  overflow: visible;
+  aspect-ratio: 60/65.54;
+}
+.red-tim-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 29px;
+  align-items: flex-end;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 684px;
+  position: relative;
+}
+.red-hero-stats {
+  display: flex;
+  flex-direction: row;
+  gap: 0px;
+  align-items: center;
+  justify-content: flex-start;
+  align-self: stretch;
+  flex-shrink: 0;
+  height: 101.25px;
+  position: relative;
+}
+.username3 {
+  color: #000000;
+  text-align: right;
+  font-family: "Inter-Medium", sans-serif;
+  font-size: 24px;
+  line-height: 0px;
+  font-weight: 500;
+  position: relative;
+  width: 305.25px;
+  height: 49.5px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.role6 {
+  flex-shrink: 0;
+  width: 49.5px;
+  height: 49.5px;
+  position: relative;
+  overflow: visible;
+  aspect-ratio: 1;
+}
+.statistic-container2 {
+  padding: 0px 16.5px 0px 16.5px;
+  display: flex;
+  flex-direction: row;
+  gap: 56.25px;
+  align-items: center;
+  justify-content: flex-end;
+  align-self: stretch;
+  flex-shrink: 0;
+  height: 51.75px;
+  position: relative;
+}
+.item-container2 {
+  display: flex;
+  flex-direction: row;
+  gap: 2.25px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  width: 320.25px;
+  height: 51.75px;
+  position: relative;
+}
+.role7 {
+  flex-shrink: 0;
+  width: 49.5px;
+  height: 49.5px;
+  position: relative;
+  overflow: visible;
+  aspect-ratio: 1;
+}
+.role8 {
+  flex-shrink: 0;
+  width: 49.5px;
+  height: 49.5px;
+  position: relative;
+  overflow: visible;
+  aspect-ratio: 1;
+}
+.role9 {
+  flex-shrink: 0;
+  width: 49.5px;
+  height: 49.5px;
+  position: relative;
+  overflow: visible;
+  aspect-ratio: 1;
+}
+.role10 {
+  flex-shrink: 0;
+  width: 49.5px;
+  height: 49.5px;
+  position: relative;
+  overflow: visible;
+  aspect-ratio: 1;
+}

@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { useRoomData, updateLocalLiveData, parseMlbbLiveData } from './useRoomData';
+import { useRoomData, updateLocalLiveData, parseMlbbLiveData, parseMlbbKillEvent, getKillEventLabel } from './useRoomData';
 
 /**
  * Broadcast local live data to all open tabs and local listeners on the machine
@@ -29,6 +28,18 @@ export function sendLocalLiveData(dataMessage: any) {
   } catch (e) {
     console.warn('CustomEvent dispatch error:', e);
   }
+}
+
+/**
+ * Send a raw mlbb_kill_event packet (Python socket repr or JSON).
+ * Returns the overlay label when the event should display, 'skipped' for
+ * single kills (filtered), or null when the payload cannot be parsed.
+ */
+export function sendKillEvent(dataMessage: any): string | null {
+  const event = parseMlbbKillEvent(dataMessage);
+  if (!event) return null;
+  updateLocalLiveData(dataMessage);
+  return getKillEventLabel(event) || 'skipped';
 }
 
 /**

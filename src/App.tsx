@@ -5,6 +5,8 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import DraftPick from "@/pages/DraftPick/index";
 import DraftPickLoading from "@/pages/DraftPickLoading/index";
 import Inmatch from "@/pages/Inmatch/index";
+import MapDraw from "@/pages/MapDraw/index";
+import Endmatch from "@/pages/Endmatch/index";
 import ControlPanel from "@/pages/ControlPanel/index";
 import RoomPage from "@/pages/Room/index";
 
@@ -71,6 +73,34 @@ function DraftPickLoadingScreen() {
   );
 }
 
+/* ─── MapDraw screen — entrance once ─── */
+function MapDrawScreen() {
+  return (
+    <motion.div
+      className="relative w-full h-full"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.2, ease: "easeOut" }}
+    >
+      <MapDraw />
+    </motion.div>
+  );
+}
+
+/* ─── Endmatch screen — entrance once ─── */
+function EndmatchScreen() {
+  return (
+    <motion.div
+      className="relative w-full h-full"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.2, ease: "easeOut" }}
+    >
+      <Endmatch />
+    </motion.div>
+  );
+}
+
 /* ─── Inmatch screen — slide up + fade entrance once ─── */
 function InmatchScreen() {
   return (
@@ -121,6 +151,28 @@ function AnimatedRoutes() {
             transition={{ duration: 0.3 }}
           >
             <ScaledScreen><InmatchScreen /></ScaledScreen>
+          </motion.div>
+        } />
+        <Route path="/mapdraw" element={
+          <motion.div
+            className="w-full h-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ScaledScreen><MapDrawScreen /></ScaledScreen>
+          </motion.div>
+        } />
+        <Route path="/endmatch" element={
+          <motion.div
+            className="w-full h-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ScaledScreen><EndmatchScreen /></ScaledScreen>
           </motion.div>
         } />
         <Route path="/control" element={<ControlPanel />} />

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './useRoomData';
-import { appConfig } from '../config';
 
 export function useMatchScore(blueTeamName?: string, redTeamName?: string) {
   const [score, setScore] = useState({ blueScore: 0, redScore: 0, bestOf: 3 });
@@ -13,11 +12,10 @@ export function useMatchScore(blueTeamName?: string, redTeamName?: string) {
       if (!supabase) return;
       
       try {
-        // 1. Fetch match_setup
+        // 1. Fetch match_setup (tanpa filter operator_id: ambil yang terbaru)
         const { data: matchSetupData } = await supabase
           .from('match_setup')
           .select('*')
-          .eq('operator_id', appConfig.operatorId)
           .order('updated_at', { ascending: false })
           .limit(1);
           
@@ -27,28 +25,27 @@ export function useMatchScore(blueTeamName?: string, redTeamName?: string) {
         const team2 = setup.Team2Name;
         const bestOf = setup.best_of || 3;
         
-        // 2. Fetch team_mappings
+        // 2. Fetch team_mappings (tanpa filter operator_id)
         const { data: mappingData } = await supabase
           .from('team_mappings')
           .select('*')
-          .eq('operator_id', appConfig.operatorId)
           .in('team_name', [team1, team2]);
           
         if (!mappingData) return;
         
         const teamToUid: Record<string, string> = {};
         mappingData.forEach((m: any) => {
-           teamToUid[m.team_name] = m.uid;
+           // NOTE: uid di DB bisa mengandung whitespace/newline — selalu trim.
+           teamToUid[String(m.team_name)] = String(m.uid ?? '').trim();
         });
         
         const uid1 = teamToUid[team1];
         const uid2 = teamToUid[team2];
         
-        // 3. Fetch stats
+        // 3. Fetch stats (tanpa filter operator_id)
         const { data: statsData } = await supabase
           .from('stats')
-          .select('*')
-          .eq('operator_id', appConfig.operatorId);
+          .select('*');
           
         if (!statsData) return;
         
@@ -65,8 +62,9 @@ export function useMatchScore(blueTeamName?: string, redTeamName?: string) {
             let t2Camp = 0;
             
             players.forEach((p: any) => {
-               if (p.id === uid1) t1Camp = p.team;
-               if (p.id === uid2) t2Camp = p.team;
+               const pid = String(p.id ?? '').trim();
+               if (uid1 && pid === uid1) t1Camp = p.team;
+               if (uid2 && pid === uid2) t2Camp = p.team;
             });
             
             // Check if both representative players were in this match

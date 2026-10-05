@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
-import { sendLocalLiveData } from "../../hooks/useLocalLiveData";
-import { parseMlbbLiveData } from "../../hooks/useRoomData";
+import { sendLocalLiveData, sendKillEvent } from "../../hooks/useLocalLiveData";
+import { parseMlbbLiveData, parseMlbbKillEvent, getKillEventLabel } from "../../hooks/useRoomData";
 
-type SideMediaSlot = "a" | "b";
-type SideMediaData = { bg: string; photos: string[] };
+const KILL_SAMPLE_SINGLE = `message: {'type': 'send', 'payload': '{"type":"mlbb_kill_event","event":{"killer":{"guid":16,"accId":"1","name":"[Computer] Hayabusa","heroid":21,"ipos":1,"team":1},"deader":{"guid":33,"accId":"6","name":"[Computer] Lolita","heroid":20,"ipos":7,"team":2},"assists":[],"assistGuids":[],"trigger":"KILL","firstBlood":false,"multKill":1,"contiKill":1,"eventType":29,"t":439}}'} data: None`;
+
+const KILL_SAMPLE_DOUBLE = `message: {'type': 'send', 'payload': '{"type":"mlbb_kill_event","event":{"killer":{"guid":32,"accId":"2178663653","name":"petwir-kepo","heroid":100,"ipos":6,"team":2},"deader":{"guid":16,"accId":"1","name":"[Computer] Hayabusa","heroid":21,"ipos":1,"team":1},"assists":[],"assistGuids":[],"trigger":"KILL","firstBlood":false,"multKill":2,"contiKill":2,"eventType":29,"t":474}}'} data: None`;
+
+const KILL_SAMPLE_TRIPLE = `message: {'type': 'send', 'payload': '{"type":"mlbb_kill_event","event":{"killer":{"guid":32,"accId":"2178663653","name":"petwir-kepo","heroid":100,"ipos":6,"team":2},"deader":{"guid":19,"accId":"4","name":"[Computer] Moskov","heroid":31,"ipos":4,"team":1},"assists":[],"assistGuids":[],"trigger":"TRIPLE_KILL","firstBlood":false,"multKill":3,"contiKill":3,"eventType":29,"t":483}}'} data: None`;
+
+const KILL_SAMPLE_FIRST_BLOOD = `message: {'type': 'send', 'payload': '{"type":"mlbb_kill_event","event":{"killer":{"guid":16,"accId":"1","name":"[Computer] Hayabusa","heroid":21,"ipos":1,"team":1},"deader":{"guid":33,"accId":"6","name":"[Computer] Lolita","heroid":20,"ipos":7,"team":2},"assists":[],"assistGuids":[],"trigger":"KILL","firstBlood":true,"multKill":1,"contiKill":1,"eventType":29,"t":120}}'} data: None`;
 
 type PlayerStatsMetric = "gold" | "dealt" | "taken";
 
@@ -20,82 +25,30 @@ function parsePlayerStatsMetric(v: unknown): PlayerStatsMetric {
   return v === "dealt" || v === "taken" ? v : "gold";
 }
 
-const SIDE_MEDIA_KEYS: Record<SideMediaSlot, string> = {
-  a: "mlbs_side_media_a",
-  b: "mlbs_side_media_b",
-};
-
-const SIDE_MEDIA_DEFAULTS: Record<SideMediaSlot, SideMediaData> = {
-  a: { bg: "#e8d367", photos: [] },
-  b: { bg: "#d9d9d9", photos: [] },
-};
-
-const SIDE_MEDIA_MAX_PHOTOS = 10;
-
-function readSideMedia(slot: SideMediaSlot): SideMediaData {
-  try {
-    const raw = localStorage.getItem(SIDE_MEDIA_KEYS[slot]);
-    if (raw) {
-      const parsed = JSON.parse(raw) as Partial<SideMediaData>;
-      return {
-        bg: typeof parsed.bg === "string" && parsed.bg ? parsed.bg : SIDE_MEDIA_DEFAULTS[slot].bg,
-        photos: Array.isArray(parsed.photos) ? parsed.photos.filter((p) => typeof p === "string") : [],
-      };
-    }
-  } catch {
-    /* noop */
-  }
-  return { ...SIDE_MEDIA_DEFAULTS[slot], photos: [] };
-}
-
-function downscaleImage(file: File, maxWidth = 324): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      try {
-        const scale = Math.min(1, maxWidth / img.width);
-        const w = Math.max(1, Math.round(img.width * scale));
-        const h = Math.max(1, Math.round(img.height * scale));
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          URL.revokeObjectURL(url);
-          reject(new Error("canvas tidak tersedia"));
-          return;
-        }
-        ctx.drawImage(img, 0, 0, w, h);
-        URL.revokeObjectURL(url);
-        resolve(canvas.toDataURL("image/jpeg", 0.82));
-      } catch (e) {
-        URL.revokeObjectURL(url);
-        reject(e);
-      }
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("gagal membaca gambar"));
-    };
-    img.src = url;
-  });
-}
-
 export default function ControlPanel() {
   const [activeOverlay, setActiveOverlay] = useState<"none" | "emblem" | "item">("none");
   const [turtleActive, setTurtleActive] = useState(false);
   const [lordActive, setLordActive] = useState(false);
+  const [mapDrawActive, setMapDrawActive] = useState(false);
 
   const [channel, setChannel] = useState<BroadcastChannel | null>(null);
   const [testIpos, setTestIpos] = useState<number>(1);
   const [testLevel, setTestLevel] = useState<number>(4);
+  const [testKillIpos, setTestKillIpos] = useState<number>(1);
+  const [testKillLabel, setTestKillLabel] = useState<string>("DOUBLE KILL");
+  const [testKillName, setTestKillName] = useState<string>("");
+
+  const INFOKILL_LABELS = [
+    "FIRST BLOOD",
+    "DOUBLE KILL",
+    "TRIPLE KILL",
+    "MANIAC",
+    "SAVAGE",
+    "SHUT DOWN",
+    "UNSTOPPABLE",
+    "GODLIKE",
+  ];
   const [showSideItem, setShowSideItem] = useState<boolean>(true);
-  const [sideMedia, setSideMedia] = useState<Record<SideMediaSlot, SideMediaData>>({
-    a: { ...SIDE_MEDIA_DEFAULTS.a, photos: [] },
-    b: { ...SIDE_MEDIA_DEFAULTS.b, photos: [] },
-  });
-  const [sideMediaError, setSideMediaError] = useState<string>("");
   const [playerStatsVisible, setPlayerStatsVisible] = useState<boolean>(false);
   const [playerStatsMetric, setPlayerStatsMetric] = useState<PlayerStatsMetric>("gold");
 
@@ -117,8 +70,6 @@ export default function ControlPanel() {
     } catch {
       /* noop */
     }
-
-    setSideMedia({ a: readSideMedia("a"), b: readSideMedia("b") });
 
     try {
       const rawStats = localStorage.getItem(PLAYER_STATS_KEY);
@@ -158,6 +109,23 @@ export default function ControlPanel() {
     channel?.postMessage({ type: "TRIGGER_LEVELUP", ipos: testIpos, level: testLevel });
   };
 
+  const triggerMapDrawTest = () => {
+    setMapDrawActive(true);
+    channel?.postMessage({ type: "TRIGGER_MAPDRAW" });
+    setTimeout(() => setMapDrawActive(false), 5000);
+  };
+
+  const triggerInfoKillTest = () => {
+    channel?.postMessage({
+      type: "TRIGGER_INFOKILL",
+      ipos: testKillIpos,
+      killLabel: testKillLabel,
+      // Opsional: override nama (dipakai jika live data kosong / ingin nama custom).
+      // Jika kosong, Inmatch otomatis pakai nama player dari live data via ipos.
+      playerName: testKillName.trim() || undefined,
+    });
+  };
+
   const toggleSideItem = () => {
     const next = !showSideItem;
     setShowSideItem(next);
@@ -167,58 +135,6 @@ export default function ControlPanel() {
       /* noop */
     }
     channel?.postMessage({ type: "SET_SIDE_ITEM_VISIBLE", visible: next });
-  };
-
-  const sendSideMedia = (slot: SideMediaSlot, data: SideMediaData) => {
-    setSideMedia((prev) => ({ ...prev, [slot]: data }));
-    try {
-      localStorage.setItem(SIDE_MEDIA_KEYS[slot], JSON.stringify(data));
-    } catch {
-      setSideMediaError("❌ Penyimpanan penuh — hapus sebagian foto lalu coba lagi.");
-      return;
-    }
-    channel?.postMessage({ type: "SET_SIDE_MEDIA", slot, data });
-  };
-
-  const handleSideBg = (slot: SideMediaSlot, bg: string) => {
-    setSideMediaError("");
-    sendSideMedia(slot, { ...sideMedia[slot], bg });
-  };
-
-  const handleSideFiles = async (slot: SideMediaSlot, files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    setSideMediaError("");
-    const current = sideMedia[slot].photos;
-    const room = SIDE_MEDIA_MAX_PHOTOS - current.length;
-    if (room <= 0) {
-      setSideMediaError(`❌ Maksimal ${SIDE_MEDIA_MAX_PHOTOS} foto per kotak.`);
-      return;
-    }
-    try {
-      const picked = Array.from(files).filter((f) => f.type.startsWith("image/")).slice(0, room);
-      const downsized: string[] = [];
-      for (const f of picked) {
-        downsized.push(await downscaleImage(f));
-      }
-      sendSideMedia(slot, { ...sideMedia[slot], photos: [...current, ...downsized] });
-    } catch {
-      setSideMediaError("❌ Gagal memproses gambar. Coba file lain.");
-    }
-  };
-
-  const removeSidePhoto = (slot: SideMediaSlot, idx: number) => {
-    setSideMediaError("");
-    sendSideMedia(slot, { ...sideMedia[slot], photos: sideMedia[slot].photos.filter((_, i) => i !== idx) });
-  };
-
-  const clearSidePhotos = (slot: SideMediaSlot) => {
-    setSideMediaError("");
-    sendSideMedia(slot, { ...sideMedia[slot], photos: [] });
-  };
-
-  const resetSideMedia = (slot: SideMediaSlot) => {
-    setSideMediaError("");
-    sendSideMedia(slot, { ...SIDE_MEDIA_DEFAULTS[slot], photos: [] });
   };
 
   const sendPlayerStats = (visible: boolean, metric: PlayerStatsMetric) => {
@@ -237,8 +153,33 @@ export default function ControlPanel() {
     if (parsed) {
       sendLocalLiveData(rawPayloadInput);
       setSendLogs(`✅ Berhasil diparse & dikirim! (${parsed.players?.length || 0} pemain)`);
+      return;
+    }
+    const killEvent = parseMlbbKillEvent(rawPayloadInput);
+    if (killEvent) {
+      const label = getKillEventLabel(killEvent);
+      sendKillEvent(rawPayloadInput);
+      if (label) {
+        setSendLogs(`✅ Kill event: ${label} — ${killEvent.killer?.name || "?"} (heroid ${killEvent.killer?.heroid ?? "?"})`);
+      } else {
+        setSendLogs(`⏭️ Single kill (multKill ${Number(killEvent.multKill) || 1}) — overlay diskip sesuai filter.`);
+      }
+      return;
+    }
+    setSendLogs("❌ Gagal mem-parse payload string. Periksa kembali format string.");
+  };
+
+  const [rawKillInput, setRawKillInput] = useState<string>(KILL_SAMPLE_TRIPLE);
+  const [killLogs, setKillLogs] = useState<string>("");
+
+  const handleSendKill = (raw: string) => {
+    const result = sendKillEvent(raw);
+    if (result === null) {
+      setKillLogs("❌ Gagal mem-parse kill payload.");
+    } else if (result === "skipped") {
+      setKillLogs("⏭️ Single kill — overlay diskip sesuai filter (hanya First Blood & multi-kill ≥ 2).");
     } else {
-      setSendLogs("❌ Gagal mem-parse payload string. Periksa kembali format string.");
+      setKillLogs(`✅ Kill event dikirim: ${result} — buka tab /inmatch untuk melihat overlay.`);
     }
   };
 
@@ -257,6 +198,9 @@ export default function ControlPanel() {
             </Link>
             <Link to="/inmatch" target="_blank" className="px-3 py-1 bg-neutral-800 hover:bg-neutral-700 rounded text-xs">
               InMatch ↗
+            </Link>
+            <Link to="/endmatch" target="_blank" className="px-3 py-1 bg-neutral-800 hover:bg-neutral-700 rounded text-xs">
+              EndMatch ↗
             </Link>
           </div>
         </div>
@@ -414,13 +358,146 @@ export default function ControlPanel() {
           </button>
         </div>
 
+        {/* Info Kill Test Section (simulasi .infokill) */}
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 space-y-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-300">
+            4. Simulasi Info Kill (Test Only)
+          </h2>
+          <p className="text-xs text-neutral-400">
+            Menampilkan overlay <code className="text-amber-300">.infokill</code> (nama-player + label kill + hero portrait) di tengah layar InMatch selama 3 detik. Nama & portrait otomatis diambil dari live data via ipos — isi Nama Custom hanya jika ingin override.
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="text-xs text-neutral-400 space-y-1">
+              <span>Pemain (ipos)</span>
+              <select
+                value={testKillIpos}
+                onChange={(e) => setTestKillIpos(Number(e.target.value))}
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-amber-500"
+              >
+                <optgroup label="Blue Team">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <option key={i} value={i}>Blue {i}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Red Team">
+                  {[6, 7, 8, 9, 10].map((i) => (
+                    <option key={i} value={i}>Red {i}</option>
+                  ))}
+                </optgroup>
+              </select>
+            </label>
+            <label className="text-xs text-neutral-400 space-y-1">
+              <span>Label Kill</span>
+              <select
+                value={testKillLabel}
+                onChange={(e) => setTestKillLabel(e.target.value)}
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-amber-500"
+              >
+                {INFOKILL_LABELS.map((label) => (
+                  <option key={label} value={label}>{label}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <label className="text-xs text-neutral-400 space-y-1 block">
+            <span>Nama Custom (opsional)</span>
+            <input
+              value={testKillName}
+              onChange={(e) => setTestKillName(e.target.value)}
+              placeholder="Kosongkan = pakai nama dari live data"
+              className="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-2 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-amber-500"
+            />
+          </label>
+          <button
+            onClick={triggerInfoKillTest}
+            className="w-full py-3 px-4 rounded-lg font-bold text-sm border transition flex items-center justify-center gap-2 bg-neutral-800 border-neutral-700 text-neutral-200 hover:bg-neutral-700"
+          >
+            <span>⚔️</span>
+            <span>Test Trigger Info Kill (3 detik)</span>
+          </button>
+
+          <div className="border-t border-neutral-800 pt-4 space-y-3">
+            <p className="text-xs text-neutral-400">
+              Atau kirim raw <code className="text-amber-300">mlbb_kill_event</code> asli (otomatis memicu overlay di tab <code className="text-amber-300">/inmatch</code> bila labelnya First Blood / Double / Triple / Maniac / Savage; single kill diskip):
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => { setRawKillInput(KILL_SAMPLE_SINGLE); handleSendKill(KILL_SAMPLE_SINGLE); }}
+                className="px-3 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-lg text-xs font-bold"
+              >
+                🔹 Single (skip)
+              </button>
+              <button
+                onClick={() => { setRawKillInput(KILL_SAMPLE_FIRST_BLOOD); handleSendKill(KILL_SAMPLE_FIRST_BLOOD); }}
+                className="px-3 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-lg text-xs font-bold"
+              >
+                🩸 First Blood
+              </button>
+              <button
+                onClick={() => { setRawKillInput(KILL_SAMPLE_DOUBLE); handleSendKill(KILL_SAMPLE_DOUBLE); }}
+                className="px-3 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-lg text-xs font-bold"
+              >
+                ⚔️ Double (t:474)
+              </button>
+              <button
+                onClick={() => { setRawKillInput(KILL_SAMPLE_TRIPLE); handleSendKill(KILL_SAMPLE_TRIPLE); }}
+                className="px-3 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-lg text-xs font-bold"
+              >
+                🔥 Triple (t:483)
+              </button>
+            </div>
+            <textarea
+              value={rawKillInput}
+              onChange={(e) => setRawKillInput(e.target.value)}
+              rows={4}
+              className="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs font-mono text-amber-300 focus:outline-none focus:border-amber-500"
+              placeholder="Paste raw mlbb_kill_event disini..."
+            />
+            <div className="flex items-center justify-between gap-3">
+              <button
+                onClick={() => handleSendKill(rawKillInput)}
+                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs rounded-lg transition"
+              >
+                🚀 Kirim Kill Event
+              </button>
+              {killLogs && (
+                <span className="text-xs font-medium text-neutral-300 bg-neutral-950 px-3 py-1.5 rounded-lg border border-neutral-800">
+                  {killLogs}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Map Draw Test Section (test only) */}
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 space-y-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-300">
+            5. Uji Animasi Map Draw (Test Only)
+          </h2>
+          <p className="text-xs text-neutral-400">
+            Memutar ulang animasi acak map (±5 detik) di tab <code className="text-amber-300">/mapdraw</code> — berhenti di <code className="text-amber-300">mapDraw</code> dari live data saat ini. Di live, animasi berjalan otomatis saat <code className="text-amber-300">gameState: 3</code> dan <code className="text-amber-300">mapDraw</code> sudah ditentukan.
+          </p>
+          <button
+            onClick={triggerMapDrawTest}
+            disabled={mapDrawActive}
+            className={`w-full py-3 px-4 rounded-lg font-bold text-sm border transition flex items-center justify-center gap-2 ${
+              mapDrawActive
+                ? "bg-amber-900/60 border-amber-500 text-amber-200"
+                : "bg-neutral-800 border-neutral-700 text-neutral-200 hover:bg-neutral-700"
+            }`}
+          >
+            <span>🎰</span>
+            <span>{mapDrawActive ? "Mengacak map..." : "Test Ulang Animasi Map Draw (5 detik)"}</span>
+          </button>
+        </div>
+
         {/* Live Payload Tester Section */}
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-300">
-            4. Simulasi Input Raw Payload MLBB Live Data
+            6. Simulasi Input Raw Payload MLBB Live Data
           </h2>
           <p className="text-xs text-neutral-400">
-            Paste pesan string payload (format Python socket, raw JSON, atau mlbb_live_data) di bawah ini untuk menguji update UI overlay secara lokal:
+            Paste pesan string payload (format Python socket, raw JSON, mlbb_live_data, atau mlbb_kill_event) di bawah ini untuk menguji update UI overlay secara lokal:
           </p>
 
           <textarea
@@ -447,95 +524,27 @@ export default function ControlPanel() {
           </div>
         </div>
 
-        {/* Side Media Section */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 space-y-4">
+        {/* Scoreboard Photos Info (sumber: folder /public) */}
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-300">
-            5. Foto & Background Kotak Scoreboard
+            6. Foto Kotak Scoreboard (Folder)
           </h2>
           <p className="text-xs text-neutral-400">
-            1 foto = tampil statis. Lebih dari 1 foto = slideshow fade otomatis (±5 detik). Kedua kotak punya penyimpanan terpisah.
+            Foto dibaca otomatis dari folder <code className="text-amber-300">public/assets/scoreboard/</code> — tanpa upload & tanpa rebuild, cukup refresh browser source.
           </p>
-          {sideMediaError && (
-            <p className="text-xs font-medium text-red-300 bg-red-950/60 px-3 py-1.5 rounded-lg border border-red-800">
-              {sideMediaError}
-            </p>
-          )}
-          {(["a", "b"] as SideMediaSlot[]).map((slot) => (
-            <div key={slot} className="bg-neutral-950 border border-neutral-800 rounded-lg p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-bold text-neutral-200">
-                  {slot === "a" ? "Slot A — Kotak emas (108×105)" : "Slot B — Blok abu kolom kanan (162×110)"}
-                </p>
-                <span className="text-[10px] text-neutral-500">
-                  {sideMedia[slot].photos.length === 0
-                    ? "Warna polos"
-                    : sideMedia[slot].photos.length === 1
-                      ? "1 foto (statis)"
-                      : `${sideMedia[slot].photos.length} foto (fade)`}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <label className="flex items-center gap-2 text-xs text-neutral-400">
-                  <input
-                    type="color"
-                    value={sideMedia[slot].bg}
-                    onChange={(e) => handleSideBg(slot, e.target.value)}
-                    className="w-10 h-8 rounded cursor-pointer bg-transparent"
-                  />
-                  <span className="font-mono">{sideMedia[slot].bg}</span>
-                </label>
-                <label className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-lg text-xs font-bold cursor-pointer">
-                  📷 Upload Foto
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={(e) => {
-                      handleSideFiles(slot, e.target.files);
-                      e.target.value = "";
-                    }}
-                  />
-                </label>
-                {sideMedia[slot].photos.length > 0 && (
-                  <button
-                    onClick={() => clearSidePhotos(slot)}
-                    className="px-3 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-lg text-xs text-neutral-300"
-                  >
-                    Hapus foto
-                  </button>
-                )}
-                <button
-                  onClick={() => resetSideMedia(slot)}
-                  className="px-3 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-lg text-xs text-neutral-300"
-                >
-                  Reset
-                </button>
-              </div>
-              {sideMedia[slot].photos.length > 0 && (
-                <div className="grid grid-cols-5 gap-2">
-                  {sideMedia[slot].photos.map((src, i) => (
-                    <div key={i} className="relative rounded overflow-hidden border border-neutral-700 aspect-square">
-                      <img src={src} alt="" className="absolute inset-0 size-full object-cover" />
-                      <button
-                        onClick={() => removeSidePhoto(slot, i)}
-                        className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/70 hover:bg-red-600 text-white text-[10px] leading-none flex items-center justify-center"
-                        title="Hapus foto ini"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+          <ul className="text-xs text-neutral-400 list-disc list-inside space-y-1 font-mono">
+            <li>Slot A (kotak emas): <span className="text-amber-300">a-1 … a-5.png/.jpg/.jpeg/.webp</span></li>
+            <li>Slot B (kolom kanan): <span className="text-amber-300">b-1 … b-5.png/.jpg/.jpeg/.webp</span></li>
+          </ul>
+          <p className="text-xs text-neutral-500">
+            1 file = tampil statis. Lebih dari 1 file = slideshow fade otomatis (±5 detik).
+          </p>
         </div>
 
         {/* Player Stats Section */}
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-300">
-            6. Player Stats Overlay
+            7. Player Stats Overlay
           </h2>
           <p className="text-xs text-neutral-400">
             Urutan pemain otomatis dari nilai terbesar. Bar oranye proporsional terhadap nilai tertinggi.

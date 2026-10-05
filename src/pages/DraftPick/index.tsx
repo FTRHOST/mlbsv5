@@ -3,13 +3,17 @@ import { motion, AnimatePresence } from "motion/react";
 import { createContext, useContext, useEffect, useState, useRef } from "react";
 import { useRoomData } from "../../hooks/useRoomData";
 import { useMatchScore } from "../../hooks/useMatchScore";
+import { useDisplayTeamNames } from "../../hooks/useTeamNames";
+import UserAvatar from "../../components/UserAvatar";
 import { useHeroStats } from "../../hooks/useHeroStats";
 
 const DraftContext = createContext<any>({});
 
 function findPlayer(players: any[], ipos: number) {
   if (!Array.isArray(players) || players.length === 0) return null;
-  const exact = players.find((p: any) => Number(p?.ipos) === ipos && Number(p?.ipos) > 0);
+  const exact = players.find(
+    (p: any) => Number(p?.ipos) === ipos && Number(p?.ipos) > 0,
+  );
   if (exact) return exact;
 
   const bluePlayers = players.filter((p: any) => Number(p?.team) === 1);
@@ -121,7 +125,7 @@ function BanSlot({
           <img
             alt=""
             className="absolute h-[163.15%] left-[-0.4%] max-w-none top-[-11.53%] w-[100.4%] grayscale"
-            src={`/assets/heroes/${banHero}.webp`}
+            src={`/assets/heroes/${banHero}.png`}
           />
         )}
       </div>
@@ -197,7 +201,7 @@ function HeaderPickBan() {
   );
 }
 
-function ValuePickBan({ pick, ban }: { pick: number, ban: number }) {
+function ValuePickBan({ pick, ban }: { pick: number; ban: number }) {
   return (
     <div
       className="content-stretch flex items-center justify-center relative shrink-0 w-full"
@@ -213,7 +217,7 @@ function ValuePickBan({ pick, ban }: { pick: number, ban: number }) {
   );
 }
 
-function PickBanRate({ pick, ban }: { pick: number, ban: number }) {
+function PickBanRate({ pick, ban }: { pick: number; ban: number }) {
   return (
     <div
       className="col-1 content-stretch flex flex-col font-['Inter:Semi_Bold',sans-serif] font-semibold gap-[10px] h-[45px] items-start justify-self-stretch relative row-2 self-start shrink-0 text-[16px]"
@@ -225,7 +229,17 @@ function PickBanRate({ pick, ban }: { pick: number, ban: number }) {
   );
 }
 
-function StatisticInfoPick({ winRate, pick, ban, heroName }: { winRate: string, pick: number, ban: number, heroName: string }) {
+function StatisticInfoPick({
+  winRate,
+  pick,
+  ban,
+  heroName,
+}: {
+  winRate: string;
+  pick: number;
+  ban: number;
+  heroName: string;
+}) {
   return (
     <div
       className="[word-break:break-word] absolute gap-y-[9px] grid grid-cols-[repeat(1,minmax(0,1fr))] grid-rows-[___minmax(0,1fr)_minmax(0,1fr)_122px] h-[213px] leading-[0] left-[-0.5px] not-italic text-[#533920] text-center top-0 w-[160px]"
@@ -310,7 +324,7 @@ function PlayerCardContent({ ipos }: { ipos: number }) {
             alt=""
             className="absolute block inset-0 max-w-none size-full object-cover"
             height="242"
-            src={`/assets/heroes/${selHeroID}.webp`}
+            src={`/assets/heroes/${selHeroID}.png`}
             width="159"
           />
         ) : (
@@ -334,10 +348,10 @@ function PlayerCardContent({ ipos }: { ipos: number }) {
           className="absolute h-[216px] left-[0.5px] top-0 w-[155px]"
           data-name="User Avatar"
         >
-          <img
-            alt=""
+          <UserAvatar
+            userId={player?.id}
+            fallback={imgUserAvatar}
             className="absolute inset-0 max-w-none object-cover pointer-events-none size-full"
-            src={imgUserAvatar}
           />
         </div>
       )}
@@ -362,7 +376,12 @@ function PlayerCardContent({ ipos }: { ipos: number }) {
             transition={{ duration: 0.3 }}
             className="absolute inset-0 pointer-events-none z-20"
           >
-            <StatisticInfoPick winRate={stats.winRate} pick={stats.pick} ban={stats.ban} heroName={stats.heroName} />
+            <StatisticInfoPick
+              winRate={stats.winRate}
+              pick={stats.pick}
+              ban={stats.ban}
+              heroName={stats.heroName}
+            />
           </motion.div>
         )}
       </AnimatePresence>
@@ -412,7 +431,10 @@ function BlueTeam() {
 
 function useDraftTimer() {
   const data = useContext(DraftContext);
-  const rawTimer = Number(data?.draftTimer !== undefined ? data.draftTimer : data?.draftTime) || 30;
+  const rawTimer =
+    Number(
+      data?.draftTimer !== undefined ? data.draftTimer : data?.draftTime,
+    ) || 30;
   const draftTime = rawTimer > 1000 ? Math.floor(rawTimer / 1000) : rawTimer;
   const agentTimestamp = data?.agentTimestamp;
   const [timeLeft, setTimeLeft] = useState(draftTime);
@@ -453,6 +475,7 @@ function MidSection() {
   if (mapDraw === 2) mapText = "DANGEREOUS GRASS";
   if (mapDraw === 3) mapText = "FLYING CLOUD";
   if (mapDraw === 4) mapText = "EXPANDING RIVER";
+  if (mapDraw === 5) mapText = "EXPANDING RIVER dua";
 
   let phaseText = "BANNING";
   if (draftPhase >= 1 && draftPhase <= 3) phaseText = "BANNING";
@@ -1146,13 +1169,19 @@ function ScoreboardSection() {
 
 export default function DraftPick() {
   const roomData = useRoomData();
-  const matchScore = useMatchScore(roomData?.blue_team_name, roomData?.red_team_name);
+  // Nama tim otomatis dari team_mappings bila rooms masih placeholder.
+  const teamNames = useDisplayTeamNames();
+  const resolvedBlue = teamNames.blue || roomData?.blue_team_name;
+  const resolvedRed = teamNames.red || roomData?.red_team_name;
+  const matchScore = useMatchScore(resolvedBlue, resolvedRed);
 
   const mergedData = {
     ...roomData,
+    blue_team_name: resolvedBlue,
+    red_team_name: resolvedRed,
     blueScore: matchScore.blueScore,
     redScore: matchScore.redScore,
-    bestOf: matchScore.bestOf
+    bestOf: matchScore.bestOf,
   };
 
   return (

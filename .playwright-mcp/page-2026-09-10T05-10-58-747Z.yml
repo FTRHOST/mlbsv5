@@ -1,0 +1,108 @@
+- generic [ref=e3]:
+  - generic: "1766041200000"
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6] [cursor=pointer]
+      - img "小地球" [ref=e8]
+      - img "竖线" [ref=e10]
+      - generic [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]: EN
+        - generic: en
+      - generic [ref=e16] [cursor=pointer]: Login
+    - generic [ref=e17]:
+      - img "IOS下载" [ref=e19] [cursor=pointer]
+      - img "安卓下载" [ref=e21] [cursor=pointer]
+      - generic [ref=e23] [cursor=pointer]
+  - generic [ref=e27]:
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - generic [ref=e32]:
+          - img "data.road_sort_icon"
+        - img "hero.data.smallmap" [ref=e34]
+        - generic [ref=e35]:
+          - generic [ref=e37]:
+            - img "data.sort_icon"
+          - generic [ref=e38]: Hirara
+          - generic [ref=e39]: Assassin
+          - generic [ref=e41]:
+            - generic [ref=e42]:
+              - generic [ref=e43]:
+                - generic [ref=e44]: 51.99%
+                - generic [ref=e45]: Win Rate
+              - generic [ref=e47]:
+                - generic [ref=e48]: 0.65%
+                - generic [ref=e49]: Pick Rate
+              - generic [ref=e51]:
+                - generic [ref=e52]: 62.62%
+                - generic [ref=e53]: Ban Rate
+            - img "切换胜率" [ref=e55] [cursor=pointer]
+      - generic [ref=e56]:
+        - generic [ref=e57] [cursor=pointer]:
+          - img "icon" [ref=e59]
+          - generic [ref=e60]: Win Rate
+          - img "图片" [ref=e62]
+        - generic [ref=e63]: A geisha ninja from the Scarlet Shadow, armed with dual fans and adorned in crimson maple and the meisen. In her twisted mind, death is the ultimate salvation.
+    - generic [ref=e64]:
+      - generic [ref=e65] [cursor=pointer]:
+        - generic [ref=e66]: SKILLS
+        - generic [ref=e67]: COUNTERS
+        - generic [ref=e68]: GUIDES
+        - generic [ref=e69]: WALLPAPER
+      - generic [ref=e72]:
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - generic [ref=e76]:
+              - generic [ref=e77] [cursor=pointer]:
+                - img "skillicon"
+              - generic [ref=e78] [cursor=pointer]:
+                - img "skillicon"
+              - generic [ref=e79] [cursor=pointer]:
+                - img "skillicon"
+            - generic [ref=e81]:
+              - generic [ref=e82]: "Twin Fans: Ukifune"
+              - generic [ref=e85]: "Hirara has only two skills, representing her two weapons: Meisen-e and Kaerazu. Drag one skill onto the other to cast a combo skill.Hirara has 2 Crimson / Death Energy. Casting a combo skill consumes 1 Crimson / Death Energy. Energy recovery time is the same as the cooldown of Meisen-e. Consuming Energy interrupts the recovery process.Hirara only deals 30(+4*Hero Level)% damage to minions."
+          - generic [ref=e87] [cursor=pointer]
+        - generic [ref=e88]: Skill Priority
+        - generic [ref=e91]:
+          - generic [ref=e92]: Skill Combo
+          - generic [ref=e95]:
+            - generic [ref=e96]:
+              - generic [ref=e97]: JUNGLER COMBOS
+              - generic [ref=e98]:
+                - generic [ref=e100]:
+                  - img "data.skillicon"
+                - generic [ref=e101]:
+                  - generic [ref=e102]:
+                    - img "箭头"
+                  - generic [ref=e103]:
+                    - img "data.skillicon"
+                - generic [ref=e104]:
+                  - generic [ref=e105]:
+                    - img "箭头"
+                  - generic [ref=e106]:
+                    - img "data.skillicon"
+              - generic [ref=e107]: In the laning phase, use Hirara's 1st Skill to close in, then use a 1st + 2nd Combo Skill to immobilize the target. Follow up with a 2nd + 1st Combo Skill to deal heavy damage and dash away to safety.
+            - generic [ref=e109]:
+              - generic [ref=e110]: TEAMFIGHT COMBOS
+              - generic [ref=e111]:
+                - generic [ref=e113]:
+                  - img "data.skillicon"
+                - generic [ref=e114]:
+                  - generic [ref=e115]:
+                    - img "箭头"
+                  - generic [ref=e116]:
+                    - img "data.skillicon"
+                - generic [ref=e117]:
+                  - generic [ref=e118]:
+                    - img "箭头"
+                  - generic [ref=e119]:
+                    - img "data.skillicon"
+                - generic [ref=e120]:
+                  - generic [ref=e121]:
+                    - img "箭头"
+                  - generic [ref=e122]:
+                    - img "data.skillicon"
+              - generic [ref=e123]: In teamfights, wait for the enemy backline to become isolated and use Hirara's 1st Skill to dive in. Use a 1st + 2nd Combo Skill to deal damage and apply CC, then follow up with a 2nd + 1st Combo Skill to burst the target down and dash out of the enemy formation. Finally, use her 2nd Skill to deal additional damage.
+      - generic [ref=e125]:
+        - img "head_big"
+    - img "返回按钮" [ref=e127] [cursor=pointer]

@@ -6,7 +6,8 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
-    "download-assets": "node scripts/download_assets.js"
+    "download-assets": "node scripts/download_assets.js",
+    "download-lane-icons": "node scripts/download_lane_icons.js"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",

@@ -882,11 +882,13 @@ function PlayerLists() {
 }
 
 import { useRoomData } from "../../hooks/useRoomData";
+import { useDisplayTeamNames } from "../../hooks/useTeamNames";
 
 export default function DraftPickLoading() {
   const [heroesData, setHeroesData] = useState<any>({});
 
   const roomData = useRoomData();
+  const teamNames = useDisplayTeamNames();
 
   useEffect(() => {
     fetch('/assets/heroes.json')
@@ -896,7 +898,14 @@ export default function DraftPickLoading() {
   }, []);
 
   return (
-    <DraftLoadingContext.Provider value={{ ...roomData, heroesData }}>
+    <DraftLoadingContext.Provider
+      value={{
+        ...roomData,
+        blue_team_name: teamNames.blue || roomData?.blue_team_name,
+        red_team_name: teamNames.red || roomData?.red_team_name,
+        heroesData,
+      }}
+    >
       <div className="bg-[#e63030] relative size-full" data-name="DraftPick - loading">
         <div className="-translate-x-1/2 absolute h-[1080px] left-1/2 top-0 w-[1920px]" data-name="Background Image">
           <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgBackgroundImage} />

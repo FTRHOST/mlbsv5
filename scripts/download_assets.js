@@ -8,10 +8,12 @@ const __dirname = path.dirname(__filename);
 const PUBLIC_DIR = path.join(__dirname, "../public");
 const HEROES_DIR = path.join(PUBLIC_DIR, "assets/heroes-icon");
 const EQUIPS_DIR = path.join(PUBLIC_DIR, "assets/equips");
+const HEROES_SMALLMAP_DIR = path.join(PUBLIC_DIR, "assets/heroes");
 
 // Ensure directories exist
 fs.mkdirSync(HEROES_DIR, { recursive: true });
 fs.mkdirSync(EQUIPS_DIR, { recursive: true });
+fs.mkdirSync(HEROES_SMALLMAP_DIR, { recursive: true });
 
 async function downloadFile(url, destPath) {
   if (!url) return false;
@@ -86,6 +88,42 @@ async function main() {
     if (ok) equipSuccess++;
   }
   console.log(`✅ ${equipSuccess}/${equips.length} equipment icons ready.`);
+
+  // 3. Download Hero Smallmap (Single file per ID: {heroId}.png -> assets/heroes/)
+  // Sumber: hero.data.smallmap dari API hero-detail (sama seperti road_sort_icon)
+  // POST https://api.gms.moontontech.com/api/gms/source/2669606/2756564
+  console.log("📥 Fetching hero smallmap list from Moonton API...");
+  const smallmapRes = await fetch("https://api.gms.moontontech.com/api/gms/source/2669606/2756564", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json;charset=UTF-8",
+      "x-appid": "2669606",
+      "x-actid": "2669607",
+      "x-lang": "en",
+    },
+    body: JSON.stringify({ pageSize: 200, pageIndex: 1, filters: [], sorts: [], object: [] })
+  });
+  const smallmapData = await smallmapRes.json();
+  const smallmapRecords = smallmapData.data?.records || [];
+  console.log(`Found ${smallmapRecords.length} heroes. Downloading smallmap to ${HEROES_SMALLMAP_DIR}...`);
+
+  let smallmapSuccess = 0;
+  for (const item of smallmapRecords) {
+    const heroData = item.data?.hero?.data;
+    const heroId = heroData?.heroid;
+    const smallmapUrl = heroData?.smallmap;
+    if (!heroId || !smallmapUrl) continue;
+
+    const targetPath = path.join(HEROES_SMALLMAP_DIR, `${heroId}.png`);
+    if (fs.existsSync(targetPath)) {
+      smallmapSuccess++;
+      continue;
+    }
+
+    const ok = await downloadFile(smallmapUrl, targetPath);
+    if (ok) smallmapSuccess++;
+  }
+  console.log(`✅ ${smallmapSuccess}/${smallmapRecords.length} hero smallmaps ready.`);
   console.log("🎉 All assets stored cleanly with zero duplication!");
 }
 
