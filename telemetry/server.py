@@ -5,13 +5,13 @@ import sys
 import time
 import frida
 import websockets
+import subprocess
 
 PORT = 8080
+FRIDA_PORT = 2626  # Custom port untuk Frida
 AGENT_PATH = os.path.join(os.path.dirname(__file__), "dist", "agent.js")
-
 CONNECTED_CLIENTS = set()
 loop = None
-
 
 async def broadcast(data):
     if not CONNECTED_CLIENTS:
@@ -23,9 +23,7 @@ async def broadcast(data):
             await client.send(msg)
         except Exception:
             disconnected.add(client)
-
     CONNECTED_CLIENTS.difference_update(disconnected)
-
 
 def on_message(message, data):
     if message.get("type") == "send":
@@ -33,8 +31,7 @@ def on_message(message, data):
         if payload and loop:
             asyncio.run_coroutine_threadsafe(broadcast(payload), loop)
     elif message.get("type") == "error":
-        print(f"[!] Error from Frida agent: {message.get('stack', message)}")
-
+        print(f"[!] Error dari Frida agent: {message.get('stack', message)}")
 
 async def ws_handler(websocket, path=None):
     CONNECTED_CLIENTS.add(websocket)
@@ -46,11 +43,22 @@ async def ws_handler(websocket, path=None):
         CONNECTED_CLIENTS.remove(websocket)
         print(f"[-] Client Overlay terputus: {remote_addr}")
 
-
-import subprocess
+def setup_adb_forward():
+    """Menjalankan perintah 'adb forward tcp:2626 tcp:2626' secara otomatis"""
+    try:
+        subprocess.check_call(
+            ["adb", "forward", f"tcp:{FRIDA_PORT}", f"tcp:{FRIDA_PORT}"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+        print(f"[+] ADB forward berhasil dikonfigurasi: tcp:{FRIDA_PORT} -> tcp:{FRIDA_PORT}")
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        print(f"[!] Gagal mengeksekusi ADB forward. Pastikan perangkat terhubung dan ADB terinstal. ({e})")
+        return False
 
 def find_target_pid(device):
-    # 1. Cek via ADB ps -A (mencari sub-proses :UnityKillsMe atau package MLBB)
+    # 1. Cek via ADB ps -A
     try:
         res = subprocess.check_output(["adb", "shell", "ps -A"], stderr=subprocess.DEVNULL).decode("utf-8")
         for line in res.splitlines():
@@ -62,23 +70,21 @@ def find_target_pid(device):
     except Exception:
         pass
 
-    # 2. Fallback: Enumerate process via Frida
+    # 2. Fallback: Enumerate process via Frida Custom Port
     try:
         processes = device.enumerate_processes()
         for proc in processes:
             name_lower = proc.name.lower()
             if (
-                ":unitykillsme" in name_lower
-                or "mobile legends" in name_lower
-                or "mobilelegends" in name_lower
+                ":unitykillsme" in name_lower 
+                or "mobile legends" in name_lower 
+                or "mobilelegends" in name_lower 
                 or "com.mobile" in name_lower
             ):
                 return proc.pid, proc.name
     except Exception:
         pass
-
     return None, None
-
 
 def frida_worker():
     while True:
@@ -87,10 +93,17 @@ def frida_worker():
                 print(f"[!] File {AGENT_PATH} belum ditemukan. Jalankan 'npm run build' terlebih dahulu.")
                 time.sleep(3)
                 continue
-
-            device = frida.get_usb_device(timeout=5)
+            
+            # Otomatisasi ADB Forward sebelum inisialisasi koneksi Frida
+            if not setup_adb_forward():
+                time.sleep(3)
+                continue
+            
+            print(f"[*] Menghubungkan ke Frida Server di 127.0.0.1:{FRIDA_PORT}...")
+            device_manager = frida.get_device_manager()
+            device = device_manager.add_remote_device(f"127.0.0.1:{FRIDA_PORT}")
+            
             pid, name = find_target_pid(device)
-
             if not pid:
                 print("[*] Menunggu proses target (:UnityKillsMe / MLBB) berjalan di perangkat...")
                 time.sleep(2)
@@ -98,29 +111,27 @@ def frida_worker():
 
             print(f"[+] Menemukan proses target: {name} (PID: {pid}). Attaching Frida...")
             session = device.attach(pid)
-
+            
             with open(AGENT_PATH, "r", encoding="utf-8") as f:
                 script_code = f.read()
-
+                
             script = session.create_script(script_code)
             script.on("message", on_message)
             script.load()
-
             print(f"[✔] Frida Agent berhasil dimuat ke PID {pid}! Mengirim telemetry data ke WebSocket...")
 
             def on_detached(reason, crash):
                 print(f"[!] Frida terpisah (reason: {reason}). Mencoba hubungkan ulang...")
-
+            
             session.on("detached", on_detached)
 
-            # Keep thread alive while session is active
+            # Menjaga thread tetap berjalan selama session aktif
             while not session.is_detached:
                 time.sleep(1)
-
+                
         except Exception as e:
             print(f"[!] Frida Worker error: {e}. Mencoba lagi dalam 3 detik...")
             time.sleep(3)
-
 
 async def main():
     global loop
@@ -134,7 +145,6 @@ async def main():
         print(f"[🚀] WebSocket Server berjalan di ws://0.0.0.0:{PORT}")
         print(f"[ℹ] Overlay dapat terhubung ke ws://localhost:{PORT} atau IP lokal host ini.")
         await asyncio.Future()  # Run forever
-
 
 if __name__ == "__main__":
     try:

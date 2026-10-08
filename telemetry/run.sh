@@ -7,9 +7,10 @@ while true; do
   PID=$(adb shell ps -A | grep ":UnityKillsMe" | awk '{print $2}')
 
   if [ ! -z "$PID" ]; then
+    adb forward tcp:2626 tcp:2626
     echo "[+] Menemukan UnityKillsMe dengan PID: $PID. Menjalankan Frida..."
     sleep 3
-    frida -U -p $PID -l dist/agent.js
+    frida -H 0.0.0.0:2626 -p $PID -l dist/agent.js
     echo "[*] Frida terputus/selesai. Menunggu proses baru..."
   fi
 

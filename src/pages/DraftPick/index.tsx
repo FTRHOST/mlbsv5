@@ -1154,6 +1154,240 @@ function RedTeamContainer() {
   );
 }
 
+/* ─── VS Preview helpers (sama desain & peletakan dengan kode Figma user) ───
+ * .user-profile-preview : 2 avatar besar (biru vs merah, role sama) dengan gap 90px,
+ *   muncul + beranimasi slide dari sisi masing-masing.
+ * .team-preview-profile : 5 avatar satu tim, flex-row items-end justify-center h-758px,
+ *   avatar pertama 377x591, sisanya 380x595 overlap ml -20px. Statis (tanpa ombak);
+ *   pindah tim A→B hanya crossfade + geser sederhana, looping sampai game dimulai.
+ * .blue-team3 (NAMA TEAM) : label nama tim, tampil saat TeamPreviewProfile.
+ */
+function useRolePair(role: number) {
+  const data = useContext(DraftContext);
+  const players = Array.isArray(data?.players) ? data.players : [];
+  const bySlot = (team: number) =>
+    players
+      .filter((p: any) => Number(p?.team) === team)
+      .sort((a: any, b: any) => (Number(a?.ipos) || 0) - (Number(b?.ipos) || 0));
+  const blueSorted = bySlot(1);
+  const redSorted = bySlot(2);
+  // Utama: pasangan se-role; fallback: pasangan se-urutan slot (role belum ada di live data).
+  const blue =
+    players.find(
+      (p: any) => Number(p?.team) === 1 && Number(p?.role) === role,
+    ) ||
+    blueSorted[role - 1] ||
+    null;
+  const red =
+    players.find(
+      (p: any) => Number(p?.team) === 2 && Number(p?.role) === role,
+    ) ||
+    redSorted[role - 1] ||
+    null;
+  return { blue, red };
+}
+
+function useTeamPlayers(team: number) {
+  const data = useContext(DraftContext);
+  const players = Array.isArray(data?.players) ? data.players : [];
+  const teamPlayers = players.filter((p: any) => Number(p?.team) === team);
+  const sorted = [...teamPlayers].sort(
+    (a: any, b: any) =>
+      (Number(a?.role) || 99) - (Number(b?.role) || 99) ||
+      (Number(a?.ipos) || 0) - (Number(b?.ipos) || 0),
+  );
+  while (sorted.length < 5) sorted.push(null);
+  return sorted.slice(0, 5);
+}
+
+function UserProfilePreview({ role }: { role: number }) {
+  const { blue, red } = useRolePair(role);
+  return (
+    <motion.div
+      className="absolute left-0 top-3 flex h-[758px] w-[1920px] flex-row items-end justify-center gap-[770px] pointer-events-none"
+      data-name="User Profile Preview"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      <motion.div
+        key={`blue_${blue?.id ?? "fallback"}_${role}`}
+        initial={{ x: -340, opacity: 0, scale: 1.25 }}
+        animate={{ x: 0, opacity: 1, scale: 1 }}
+        exit={{ x: -160, opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.65, ease: "easeOut" }}
+        data-name="user-avatar-blue-team"
+      >
+        <UserAvatar
+          userId={blue?.id}
+          fallback={imgUserAvatar}
+          className="h-[700px] w-[447px] object-cover pointer-events-none"
+        />
+      </motion.div>
+      <motion.div
+        key={`red_${red?.id ?? "fallback"}_${role}`}
+        initial={{ x: 340, opacity: 0, scale: 1.25 }}
+        animate={{ x: 0, opacity: 1, scale: 1 }}
+        exit={{ x: 160, opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.65, ease: "easeOut", delay: 0.12 }}
+        data-name="user-avatar-red-team"
+      >
+        <UserAvatar
+          userId={red?.id}
+          fallback={imgUserAvatar}
+          className="h-[704px] w-[450px] object-cover pointer-events-none"
+        />
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function TeamPreviewProfile({ team }: { team: 1 | 2 }) {
+  const teamPlayers = useTeamPlayers(team);
+  return (
+    <motion.div
+      className="absolute left-0 top-5 flex h-[758px] w-[1920px] flex-row items-end justify-center pointer-events-none"
+      data-name="Team Preview Profile"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      {teamPlayers.map((p: any, i: number) => (
+        <motion.div
+          key={`${team}_${p?.id ?? i}_${i}`}
+          initial={{ y: 60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.08 }}
+          className={i === 0 ? "" : "ml-[-20px]"}
+          data-name={`user-avatar-${team === 1 ? "blue" : "red"}-team-${i + 1}`}
+        >
+          <UserAvatar
+            userId={p?.id}
+            fallback={imgUserAvatar}
+            className={
+              i === 0
+                ? "h-[591px] w-[377px] object-cover pointer-events-none"
+                : "h-[595px] w-[380px] object-cover pointer-events-none"
+            }
+          />
+        </motion.div>
+      ))}
+    </motion.div>
+  );
+}
+
+function TeamNameLabel({ team }: { team: 1 | 2 }) {
+  const data = useContext(DraftContext);
+  const teamName =
+    team === 1
+      ? data?.blue_team_name || data?.blueTeamName || "NAMA TEAM"
+      : data?.red_team_name || data?.redTeamName || "NAMA TEAM";
+  return (
+    <motion.div
+      className="absolute left-1/2 top-[90px] z-40 w-[1200px] -translate-x-1/2 pointer-events-none"
+      data-name="NAMA TEAM"
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -16 }}
+      transition={{ duration: 0.45, ease: "easeOut" }}
+    >
+      <p className="text-center font-['Inter:Bold',sans-serif] font-bold text-[72px] leading-[1] text-white text-shadow-[0px_4px_16px_rgba(0,0,0,0.45)]">
+        {teamName}
+      </p>
+    </motion.div>
+  );
+}
+
+/* Sequence: VS per-role (2.6s tiap role) → TeamPreview looping + NAMA TEAM sampai game dimulai.
+ * Pemicu: SEMUA fase draft (BANNING, PICKING, PREPARATION, numerik 1-7) — tampil sejak draftpick
+ * dimulai begitu overlay menerima data player. Mati saat game dimulai (IN_GAME / gameState >= 4).
+ * Untuk cek desain via MCP tanpa live data: tambah ?preview=vs atau ?preview=team di URL.
+ */
+function PreviewSequence() {
+  const data = useContext(DraftContext);
+  const draftPhase = data?.draftPhase;
+  const gameState = Number(data?.gameState ?? 0);
+  const forcePreview =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("preview")
+      : null;
+
+  const phaseStr = String(draftPhase ?? "").toUpperCase();
+  const phaseNum = Number(draftPhase);
+  const isDraftPhase =
+    (Number.isFinite(phaseNum) && phaseNum >= 1 && phaseNum <= 7) ||
+    phaseStr.includes("BAN") ||
+    phaseStr.includes("PICK") ||
+    phaseStr === "PREPARATION";
+  const gameStarted = gameState >= 4 || phaseStr === "IN_GAME";
+  const showPreview =
+    forcePreview === "vs" || forcePreview === "team"
+      ? true
+      : isDraftPhase && !gameStarted;
+  const [vsIndex, setVsIndex] = useState(0);
+  const [showTeam, setShowTeam] = useState(forcePreview === "team");
+  const [teamSide, setTeamSide] = useState<1 | 2>(1);
+
+  useEffect(() => {
+    if (!showPreview) return;
+    if (forcePreview === "team") {
+      setShowTeam(true);
+      return;
+    }
+    if (forcePreview === "vs") {
+      setShowTeam(false);
+      const t = setInterval(() => setVsIndex((i) => (i + 1) % 5), 2600);
+      return () => clearInterval(t);
+    }
+    setVsIndex(0);
+    setShowTeam(false);
+    const t = setInterval(() => {
+      setVsIndex((i) => {
+        if (i >= 4) {
+          clearInterval(t);
+          setTimeout(() => setShowTeam(true), 700);
+          return i;
+        }
+        return i + 1;
+      });
+    }, 2600);
+    return () => clearInterval(t);
+  }, [showPreview, forcePreview, isDraftPhase]);
+
+  useEffect(() => {
+    if (!showTeam || !showPreview) return;
+    const t = setInterval(() => setTeamSide((s) => (s === 1 ? 2 : 1)), 4000);
+    return () => clearInterval(t);
+  }, [showTeam, showPreview]);
+
+  if (!showPreview) return null;
+  const role = vsIndex + 1;
+
+  return (
+    <>
+      <AnimatePresence>
+        {!showTeam && <UserProfilePreview key={`vs_${role}`} role={role} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showTeam && (
+          <motion.div
+            key={`teamwrap_${teamSide}`}
+            initial={{ opacity: 0, x: teamSide === 1 ? 80 : -80 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: teamSide === 1 ? -80 : 80 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
+            <TeamPreviewProfile team={teamSide} />
+            <TeamNameLabel team={teamSide} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
 function ScoreboardSection() {
   return (
     <div
@@ -1197,6 +1431,7 @@ export default function DraftPick() {
             src={imgBackgroundImage}
           />
         </div>
+        <PreviewSequence />
         <DraftpickSection />
         <ScoreboardSection />
       </div>

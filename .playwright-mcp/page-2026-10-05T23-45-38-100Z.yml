@@ -1,0 +1,42 @@
+- generic [ref=f3e9]:
+  - generic [ref=f3e11]:
+    - generic [ref=f3e14]:
+      - generic [ref=f3e21]:
+        - paragraph: NAMA
+      - generic [ref=f3e28]:
+        - generic [ref=f3e35]:
+          - paragraph: NAMA
+        - generic [ref=f3e42]:
+          - paragraph: NAMA
+        - generic [ref=f3e49]:
+          - paragraph: NAMA
+        - generic [ref=f3e56]:
+          - paragraph: NAMA
+        - generic [ref=f3e63]:
+          - paragraph: NAMA
+    - generic [ref=f3e64]:
+      - paragraph [ref=f3e67]: "30"
+      - generic [ref=f3e73]:
+        - paragraph: BANNING
+      - generic:
+        - paragraph: DANGEREOUS GRASS
+        - paragraph
+    - generic [ref=f3e76]:
+      - generic [ref=f3e90]:
+        - paragraph: NAMA
+      - generic [ref=f3e92]:
+        - generic [ref=f3e99]:
+          - paragraph: NAMA
+        - generic [ref=f3e106]:
+          - paragraph: NAMA
+        - generic [ref=f3e113]:
+          - paragraph: NAMA
+        - generic [ref=f3e120]:
+          - paragraph: NAMA
+        - generic [ref=f3e127]:
+          - paragraph: NAMA
+  - generic [ref=f3e128]:
+    - generic [ref=f3e133]:
+      - paragraph: BLUE TEAM
+    - generic [ref=f3e176]:
+      - paragraph: RED TEAM
