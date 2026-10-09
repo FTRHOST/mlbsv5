@@ -1,0 +1,151 @@
+- generic [ref=e9]:
+  - generic [ref=e10]:
+    - generic [ref=e11]:
+      - generic [ref=e13]:
+        - paragraph [ref=e21]: Player 1
+        - generic [ref=e35]:
+          - generic [ref=e40]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+      - generic [ref=e43]:
+        - paragraph [ref=e51]: Player 2
+        - generic [ref=e65]:
+          - generic [ref=e70]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+      - generic [ref=e73]:
+        - paragraph [ref=e81]: Player 3
+        - generic [ref=e95]:
+          - generic [ref=e100]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+      - generic [ref=e103]:
+        - paragraph [ref=e111]: Player 4
+        - generic [ref=e125]:
+          - generic [ref=e130]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+      - generic [ref=e133]:
+        - paragraph [ref=e141]: Player 5
+        - generic [ref=e155]:
+          - generic [ref=e160]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+    - generic [ref=e162]:
+      - generic [ref=e165]:
+        - paragraph [ref=e173]: Player 6
+        - generic [ref=e187]:
+          - generic [ref=e194]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+      - generic [ref=e197]:
+        - paragraph [ref=e205]: Player 7
+        - generic [ref=e219]:
+          - generic [ref=e226]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+      - generic [ref=e229]:
+        - paragraph [ref=e237]: Player 8
+        - generic [ref=e251]:
+          - generic [ref=e258]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+      - generic [ref=e261]:
+        - paragraph [ref=e269]: Player 9
+        - generic [ref=e283]:
+          - generic [ref=e290]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+      - generic [ref=e293]:
+        - paragraph [ref=e301]: Player 10
+        - generic [ref=e315]:
+          - generic [ref=e322]:
+            - paragraph: 0/0/0
+          - generic:
+            - paragraph: "1"
+  - generic [ref=e325]:
+    - generic [ref=e327]:
+      - generic [ref=e330]:
+        - paragraph [ref=e334]: "0"
+        - paragraph [ref=e338]: "0"
+        - paragraph [ref=e342]: "0"
+        - paragraph [ref=e346]: 10K
+      - paragraph [ref=e350]: blue team
+    - generic [ref=e351]:
+      - paragraph [ref=e378]: 00:00
+      - paragraph [ref=e380]: "0"
+      - paragraph [ref=e382]: "0"
+    - generic [ref=e383]:
+      - generic [ref=e386]:
+        - paragraph [ref=e390]: 10K
+        - paragraph [ref=e394]: "0"
+        - paragraph [ref=e398]: "0"
+        - paragraph [ref=e402]: "0"
+      - paragraph [ref=e406]: red team
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - paragraph: NAMA
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - paragraph: NAMA
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - paragraph: NAMA
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - paragraph: NAMA
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - paragraph: NAMA
+      - generic:
+        - generic:
+          - paragraph: EMBLEM
+          - paragraph: BUILD
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - paragraph: NAMA
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - paragraph: NAMA
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - paragraph: NAMA
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - paragraph: NAMA
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - paragraph: NAMA

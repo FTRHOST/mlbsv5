@@ -1,0 +1,289 @@
+- generic [ref=e6]:
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - heading "MLBS Stream Control Panel" [level=1] [ref=e9]
+      - paragraph [ref=e10]: Panel Kontrol Operator Overlay Realtime
+    - generic [ref=e11]:
+      - link "DraftPick ↗" [ref=e12] [cursor=pointer]:
+        - /url: /draftpick
+      - link "InMatch ↗" [ref=e13] [cursor=pointer]:
+        - /url: /inmatch
+      - link "EndMatch ↗" [ref=e14] [cursor=pointer]:
+        - /url: /endmatch
+      - link "Bracket ↗" [ref=e15] [cursor=pointer]:
+        - /url: /bracket
+      - link "SesaatLagi ↗" [ref=e16] [cursor=pointer]:
+        - /url: /sesaatlagi
+      - link "Win ↗" [ref=e17] [cursor=pointer]:
+        - /url: /win
+  - generic [ref=e18]:
+    - heading "1. Kontrol Tampilan Overlay Bawah (InMatch)" [level=2] [ref=e19]
+    - paragraph [ref=e20]: Pilih grafik yang ingin ditampilkan di overlay stream. Anda juga dapat menggunakan Hotkey di keyboard saat fokus di window stream (E = Emblem, I = Item, H/Esc = Sembunyikan).
+    - generic [ref=e21]:
+      - 'button "🚫 Sembunyikan Overlay [HotKey: H / ESC]" [ref=e22]':
+        - generic [ref=e23]: 🚫
+        - generic [ref=e24]: Sembunyikan Overlay
+        - generic [ref=e25]: "[HotKey: H / ESC]"
+      - 'button "🛡️ Emblem Build [HotKey: E]" [active] [ref=e26]':
+        - generic [ref=e27]: 🛡️
+        - generic [ref=e28]: Emblem Build
+        - generic [ref=e29]: "[HotKey: E]"
+      - 'button "⚔️ Item Build [HotKey: I]" [ref=e30]':
+        - generic [ref=e31]: ⚔️
+        - generic [ref=e32]: Item Build
+        - generic [ref=e33]: "[HotKey: I]"
+    - generic [ref=e34]:
+      - generic [ref=e35]: "Status Overlay Aktif:"
+      - generic [ref=e36]: emblem
+    - paragraph [ref=e205]: ✅ Tersimpan di database Supabase.
+    - generic [ref=e37]:
+      - generic [ref=e38]: "Item Kartu User (kotak 47px di sisi kartu):"
+      - button "👁️ Tampil" [ref=e39]
+    - generic [ref=e40]:
+      - text: "Nama Caster (teks hitam di atas info patch):"
+      - generic [ref=e41]:
+        - textbox "mis. CASTER A & CASTER B" [ref=e42]
+        - button "📡 Simpan" [ref=e43]
+  - generic [ref=e44]:
+    - heading "2. Trigger Notifikasi Game" [level=2] [ref=e45]
+    - generic [ref=e46]:
+      - button "🐢 Trigger Turtle" [ref=e47]:
+        - generic [ref=e48]: 🐢
+        - generic [ref=e49]: Trigger Turtle
+      - button "👹 Trigger Lord" [ref=e50]:
+        - generic [ref=e51]: 👹
+        - generic [ref=e52]: Trigger Lord
+  - generic [ref=e53]:
+    - heading "3. Uji Coba Notifikasi Level Up (Test Only)" [level=2] [ref=e54]
+    - paragraph [ref=e55]: Tombol ini hanya untuk uji tampilan. Di live, notif muncul otomatis 3 detik saat pemain mencapai level 4 / 15, dengan waktu game saat level didapat.
+    - generic [ref=e56]:
+      - generic [ref=e57]:
+        - text: Pemain (ipos)
+        - combobox "Pemain (ipos)" [ref=e58]:
+          - option "Blue 1" [selected]
+          - option "Blue 2"
+          - option "Blue 3"
+          - option "Blue 4"
+          - option "Blue 5"
+          - option "Red 6"
+          - option "Red 7"
+          - option "Red 8"
+          - option "Red 9"
+          - option "Red 10"
+      - generic [ref=e59]:
+        - text: Level
+        - combobox "Level" [ref=e60]:
+          - option "Level 4" [selected]
+          - option "Level 15"
+    - button "⬆️ Test Trigger Level Up (Blue kiri→kanan / Red kanan→kiri)" [ref=e61]:
+      - generic [ref=e62]: ⬆️
+      - generic [ref=e63]: Test Trigger Level Up (Blue kiri→kanan / Red kanan→kiri)
+  - generic [ref=e64]:
+    - heading "4. Simulasi Info Kill (Test Only)" [level=2] [ref=e65]
+    - paragraph [ref=e66]:
+      - text: Menampilkan overlay
+      - code [ref=e67]: .infokill
+      - text: (nama-player + label kill + hero portrait) di tengah layar InMatch selama 3 detik. Nama & portrait otomatis diambil dari live data via ipos — isi Nama Custom hanya jika ingin override.
+    - generic [ref=e68]:
+      - generic [ref=e69]:
+        - text: Pemain (ipos)
+        - combobox "Pemain (ipos)" [ref=e70]:
+          - option "Blue 1" [selected]
+          - option "Blue 2"
+          - option "Blue 3"
+          - option "Blue 4"
+          - option "Blue 5"
+          - option "Red 6"
+          - option "Red 7"
+          - option "Red 8"
+          - option "Red 9"
+          - option "Red 10"
+      - generic [ref=e71]:
+        - text: Label Kill
+        - combobox "Label Kill" [ref=e72]:
+          - option "FIRST BLOOD"
+          - option "DOUBLE KILL" [selected]
+          - option "TRIPLE KILL"
+          - option "MANIAC"
+          - option "SAVAGE"
+          - option "SHUT DOWN"
+          - option "UNSTOPPABLE"
+          - option "GODLIKE"
+    - generic [ref=e73]:
+      - text: Nama Custom (opsional)
+      - textbox "Nama Custom (opsional)" [ref=e74]:
+        - /placeholder: Kosongkan = pakai nama dari live data
+    - button "⚔️ Test Trigger Info Kill (3 detik)" [ref=e75]:
+      - generic [ref=e76]: ⚔️
+      - generic [ref=e77]: Test Trigger Info Kill (3 detik)
+    - generic [ref=e78]:
+      - paragraph [ref=e79]:
+        - text: Atau kirim raw
+        - code [ref=e80]: mlbb_kill_event
+        - text: asli (otomatis memicu overlay di tab
+        - code [ref=e81]: /inmatch
+        - text: "bila labelnya First Blood / Double / Triple / Maniac / Savage; single kill diskip):"
+      - generic [ref=e82]:
+        - button "🔹 Single (skip)" [ref=e83]
+        - button "🩸 First Blood" [ref=e84]
+        - button "⚔️ Double (t:474)" [ref=e85]
+        - button "🔥 Triple (t:483)" [ref=e86]
+      - textbox "Paste raw mlbb_kill_event disini..." [ref=e87]: "message: {'type': 'send', 'payload': '{\"type\":\"mlbb_kill_event\",\"event\":{\"killer\":{\"guid\":32,\"accId\":\"2178663653\",\"name\":\"petwir-kepo\",\"heroid\":100,\"ipos\":6,\"team\":2},\"deader\":{\"guid\":19,\"accId\":\"4\",\"name\":\"[Computer] Moskov\",\"heroid\":31,\"ipos\":4,\"team\":1},\"assists\":[],\"assistGuids\":[],\"trigger\":\"TRIPLE_KILL\",\"firstBlood\":false,\"multKill\":3,\"contiKill\":3,\"eventType\":29,\"t\":483}}'} data: None"
+      - button "🚀 Kirim Kill Event" [ref=e89]
+  - generic [ref=e90]:
+    - heading "5. Uji Animasi Map Draw (Test Only)" [level=2] [ref=e91]
+    - paragraph [ref=e92]:
+      - text: Memutar ulang animasi acak map (±5 detik) di tab
+      - code [ref=e93]: /mapdraw
+      - text: — berhenti di
+      - code [ref=e94]: mapDraw
+      - text: dari live data saat ini. Di live, animasi berjalan otomatis saat
+      - code [ref=e95]: "gameState: 3"
+      - text: dan
+      - code [ref=e96]: mapDraw
+      - text: sudah ditentukan.
+    - button "🎰 Test Ulang Animasi Map Draw (5 detik)" [ref=e97]:
+      - generic [ref=e98]: 🎰
+      - generic [ref=e99]: Test Ulang Animasi Map Draw (5 detik)
+  - generic [ref=e100]:
+    - heading "6. Simulasi Input Raw Payload MLBB Live Data" [level=2] [ref=e101]
+    - paragraph [ref=e102]: "Paste pesan string payload (format Python socket, raw JSON, mlbb_live_data, atau mlbb_kill_event) di bawah ini untuk menguji update UI overlay secara lokal:"
+    - textbox "Paste raw string payload disini..." [ref=e103]: "message: {'type': 'send', 'payload': '{\"type\":\"mlbb_live_data\",\"payload\":{\"gameState\":0,\"draftPhase\":\"PREPARATION\",\"draftTimer\":0,\"players\":[{\"ipos\":0,\"id\":\"2178663653\",\"name\":\"petwir-kepo\",\"role\":5,\"team\":2,\"heroid\":18,\"uiHeroIDChoose\":0,\"battleSpell\":20050,\"emblem\":0,\"emblemSkills\":[],\"pickPhase\":false,\"banPhase\":false,\"SelHeroID\":18,\"banHero\":0,\"hp\":3070,\"maxHp\":3070,\"level\":6,\"deathTime\":0,\"kill\":2,\"dead\":2,\"assist\":0,\"ultActive\":false,\"equips\":[2305,1001,2003,1004,0,0],\"totalGold\":2284,\"damageDealt\":16442,\"damageTaken\":7412},{\"ipos\":0,\"id\":\"2231735373\",\"name\":\"Tony Mark*66\",\"role\":3,\"team\":1,\"heroid\":10,\"uiHeroIDChoose\":0,\"battleSpell\":20050,\"emblem\":0,\"emblemSkills\":[],\"pickPhase\":false,\"banPhase\":false,\"SelHeroID\":10,\"banHero\":0,\"hp\":3440,\"maxHp\":3440,\"level\":4,\"deathTime\":0,\"kill\":1,\"dead\":2,\"assist\":0,\"ultActive\":false,\"equips\":[3562,1202,1203,0,0,0],\"totalGold\":1492,\"damageDealt\":7046,\"damageTaken\":9248}],\"Battle\":{\"battleState\":0,\"winCamp\":0,\"waktuPertandingan\":269,\"blueTeamKill\":1,\"redTeamKill\":2,\"blueTeamGold\":1492,\"redTeamGold\":2284,\"blueTeamKillLord\":0,\"redTeamKillLord\":0,\"blueTeamDestroyTuret\":0,\"redTeamDestroyTuret\":0}}}'} data: None"
+    - button "🚀 Kirim Live Data Lokal ke Overlay" [ref=e105]
+  - generic [ref=e106]:
+    - heading "6. Foto Kotak Scoreboard (Folder)" [level=2] [ref=e107]
+    - paragraph [ref=e108]:
+      - text: Foto dibaca otomatis dari folder
+      - code [ref=e109]: public/assets/scoreboard/
+      - text: — tanpa upload & tanpa rebuild, cukup refresh browser source.
+    - list [ref=e110]:
+      - listitem [ref=e111]: "Slot A (kotak emas): a-1 … a-5.png/.jpg/.jpeg/.webp"
+      - listitem [ref=e112]: "Slot B (kolom kanan): b-1 … b-5.png/.jpg/.jpeg/.webp"
+    - paragraph [ref=e113]: 1 file = tampil statis. Lebih dari 1 file = slideshow fade otomatis (±5 detik).
+  - generic [ref=e114]:
+    - heading "7. Player Stats Overlay" [level=2] [ref=e115]
+    - paragraph [ref=e116]: Urutan pemain otomatis dari nilai terbesar. Bar oranye proporsional terhadap nilai tertinggi.
+    - generic [ref=e117]:
+      - button "Gold Rank" [ref=e118]
+      - button "Total Damage" [ref=e119]
+      - button "Damage Taken" [ref=e120]
+    - button "📊 Tampilkan Player Stats" [ref=e121]:
+      - generic [ref=e122]: 📊
+      - generic [ref=e123]: Tampilkan Player Stats
+    - paragraph [ref=e206]: ✅ Tersimpan di database Supabase.
+  - generic [ref=e124]:
+    - heading "8. Bracket Playoff (Database)" [level=2] [ref=e125]
+    - paragraph [ref=e126]:
+      - text: Tersimpan di tabel Supabase
+      - code [ref=e127]: bracket
+      - text: — halaman
+      - code [ref=e128]: /bracket
+      - text: terupdate realtime di semua perangkat.
+    - generic [ref=e129]:
+      - generic [ref=e130]:
+        - text: M1 · Tim A
+        - textbox "M1 · Tim A" [ref=e131]: TIM 1
+      - generic [ref=e132]:
+        - text: M1 · Tim B
+        - textbox "M1 · Tim B" [ref=e133]: TIM 2
+      - generic [ref=e134]:
+        - text: M2 · Tim A
+        - textbox "M2 · Tim A" [ref=e135]: TIM 3
+      - generic [ref=e136]:
+        - text: M2 · Tim B
+        - textbox "M2 · Tim B" [ref=e137]: TIM 4
+      - generic [ref=e138]:
+        - text: M3 · Tim A
+        - textbox "M3 · Tim A" [ref=e139]: TIM 5
+      - generic [ref=e140]:
+        - text: M3 · Tim B
+        - textbox "M3 · Tim B" [ref=e141]: TIM 6
+      - generic [ref=e142]:
+        - text: M4 · Tim A
+        - textbox "M4 · Tim A" [ref=e143]: TIM 7
+      - generic [ref=e144]:
+        - text: M4 · Tim B
+        - textbox "M4 · Tim B" [ref=e145]: WINNER M1
+      - generic [ref=e146]:
+        - text: M5 · Tim A
+        - textbox "M5 · Tim A" [ref=e147]: WINNER M2
+      - generic [ref=e148]:
+        - text: M5 · Tim B
+        - textbox "M5 · Tim B" [ref=e149]: WINNER M3
+      - generic [ref=e150]:
+        - text: Final · Tim A
+        - textbox "Final · Tim A" [ref=e151]: WINNER M4
+      - generic [ref=e152]:
+        - text: Final · Tim B
+        - textbox "Final · Tim B" [ref=e153]: WINNER M5
+    - generic [ref=e154]:
+      - button "📡 Simpan ke Database" [ref=e155]
+      - button "Reset default" [ref=e156]
+  - generic [ref=e157]:
+    - heading "9. Sesaat Lagi + Countdown (Database)" [level=2] [ref=e158]
+    - paragraph [ref=e159]:
+      - text: Tersimpan di tabel Supabase
+      - code [ref=e160]: sesaatlagi
+      - text: — halaman
+      - code [ref=e161]: /sesaatlagi
+      - text: terupdate realtime di semua perangkat. Nama tim kosong = otomatis dari live data.
+    - generic [ref=e162]:
+      - generic [ref=e163]:
+        - text: Tim Biru (kiri)
+        - textbox "Tim Biru (kiri)" [ref=e164]:
+          - /placeholder: Kosong = dari live data
+      - generic [ref=e165]:
+        - text: Tim Merah (kanan)
+        - textbox "Tim Merah (kanan)" [ref=e166]:
+          - /placeholder: Kosong = dari live data
+      - generic [ref=e167]:
+        - text: Label Game (mis. GAME KE 2)
+        - textbox "Label Game (mis. GAME KE 2)" [ref=e168]:
+          - /placeholder: ""
+      - generic [ref=e169]:
+        - text: Babak (mis. PENYISIHAN)
+        - textbox "Babak (mis. PENYISIHAN)" [ref=e170]:
+          - /placeholder: ""
+    - button "📡 Simpan info match" [ref=e171]
+    - generic [ref=e172]:
+      - generic [ref=e173]:
+        - generic [ref=e174]:
+          - text: "Sisa ke target:"
+          - generic [ref=e175]: 00:00
+        - generic [ref=e176]: ○ TANPA TARGET
+      - paragraph [ref=e177]: "Target mulai: —"
+      - generic [ref=e178]:
+        - text: Jam target mulai (waktu perangkat operator)
+        - textbox "Jam target mulai (waktu perangkat operator)" [ref=e179]
+      - generic [ref=e180]:
+        - button "🎯 Set Target Jam" [ref=e181]
+        - button "⏹ Hapus Target" [ref=e182]
+      - generic [ref=e183]:
+        - button "+5 mnt" [ref=e184]
+        - button "+10 mnt" [ref=e185]
+        - button "+15 mnt" [ref=e186]
+        - button "+30 mnt" [ref=e187]
+  - generic [ref=e188]:
+    - heading "10. Victory Moment (Database)" [level=2] [ref=e189]
+    - paragraph [ref=e190]:
+      - text: Tersimpan di kolom
+      - code [ref=e191]: sesaatlagi.winner
+      - text: — halaman
+      - code [ref=e192]: /win
+      - text: terupdate realtime. Kosongkan = otomatis dari skor match / live data.
+    - generic [ref=e193]:
+      - textbox "Nama tim pemenang (opsional)" [ref=e194]
+      - button "📡 Simpan" [ref=e195]
+      - button "Auto" [ref=e196]
+  - generic [ref=e197]:
+    - paragraph [ref=e198]: "💡 Petunjuk Penggunaan Operator:"
+    - list [ref=e199]:
+      - listitem [ref=e200]:
+        - text: Buka halaman ini (
+        - code [ref=e201]: /control
+        - text: ) di layar kedua atau HP operator.
+      - listitem [ref=e202]:
+        - text: Buka halaman stream (
+        - code [ref=e203]: /inmatch
+        - text: ) pada OBS Browser Source (1920x1080).
+      - listitem [ref=e204]: Klik tombol kontrol di atas untuk beralih antara Emblem Build, Item Build, atau Sembunyi.
