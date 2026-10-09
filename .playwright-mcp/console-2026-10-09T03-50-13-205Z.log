@@ -1,0 +1,115 @@
+[   11290ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:21608
+[   18115ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts:45
+[   18122ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts:45
+[   18126ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts:45
+[   18128ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts:45
+[   18140ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts:45
+[   18246ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts:45
+[   18253ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts:45
+[   18256ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts:45
+[   18260ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts:45
+[   18483ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts:45
+[   18490ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts:45
+[   20661ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   23713ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   27337ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   29606ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   31765ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   33815ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   35824ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   37858ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   39863ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   41889ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   43893ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   45900ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   47934ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   50030ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   52654ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   54798ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   57389ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   62365ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   66005ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-(patch) => {
+      if (patch.sideItemVisible !== void 0) applyLocal(patch.sideItemVisible);
+    } after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517859828:45
+[   66010ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-(patch) => {
+      if (patch.sideItemVisible !== void 0) applyLocal(patch.sideItemVisible);
+    } after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517859828:45
+[   66013ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-(patch) => {
+      if (patch.sideItemVisible !== void 0) applyLocal(patch.sideItemVisible);
+    } after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517859828:45
+[   66024ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-(patch) => {
+      if (patch.sideItemVisible !== void 0) applyLocal(patch.sideItemVisible);
+    } after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517859828:45
+[   66241ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-(patch) => {
+      if (patch.sideItemVisible !== void 0) applyLocal(patch.sideItemVisible);
+    } after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517859828:45
+[   66475ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-(patch) => {
+      if (patch.sideItemVisible !== void 0) applyLocal(patch.sideItemVisible);
+    } after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517859828:45
+[   66550ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-(patch) => {
+      if (patch.sideItemVisible !== void 0) applyLocal(patch.sideItemVisible);
+    } after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517859828:45
+[   66553ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-(patch) => {
+      if (patch.sideItemVisible !== void 0) applyLocal(patch.sideItemVisible);
+    } after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517859828:45
+[   66556ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-(patch) => {
+      if (patch.sideItemVisible !== void 0) applyLocal(patch.sideItemVisible);
+    } after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517859828:45
+[   70646ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   72703ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   76149ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   78203ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   82056ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517883163:45
+[   82062ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517883163:45
+[   82210ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517883163:45
+[   82220ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517883163:45
+[   82225ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517883163:45
+[   82229ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517883163:45
+[   82233ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517883163:45
+[   82242ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517883163:45
+[   82246ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517883163:45
+[   84663ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   93068ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  106531ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517885308:45
+[  106537ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517885308:45
+[  106541ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517885308:45
+[  106546ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517885308:45
+[  106549ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517885308:45
+[  106551ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517885308:45
+[  106560ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517885308:45
+[  106778ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517885308:45
+[  106797ms] [WARNING] [overlay-db] overlay_control: cannot add `postgres_changes` callbacks for realtime:overlay-control-side after `subscribe()`. @ http://localhost:5174/src/hooks/useOverlayControl.ts?t=1791517885308:45
+[  108576ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  116436ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  121047ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  127010ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  129267ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  131389ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  133570ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  135873ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  138172ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  140312ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  142639ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  144811ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  147609ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  150300ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  152605ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  155328ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  158501ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  161009ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  165651ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  169271ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  172675ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  176228ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  180169ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  185486ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  192448ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  199390ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  203187ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  207321ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  211117ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  217238ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  223116ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  227198ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  233884ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  237142ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267

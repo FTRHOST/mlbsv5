@@ -1,0 +1,134 @@
+[    2374ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:21608
+[    3206ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[    3281ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:5174/favicon.ico:0
+[    5270ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[    7405ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[    9443ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   11465ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   13668ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   15682ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   17687ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   19733ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   22349ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   24402ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   26412ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   28428ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   30498ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   33718ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   35964ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   37997ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   40132ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   42179ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   44375ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   46397ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   48413ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   50429ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   52441ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   54484ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   56546ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   58578ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   60654ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   62684ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[   64728ms] [LOG] [Local WS] ✅ Terhubung ke Frida Telemetry Server di ws://localhost:8080 @ http://localhost:5174/src/hooks/useRoomData.ts:269
+[  134634ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  136703ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  138797ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  140924ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  142960ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  145013ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  147050ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  149357ms] [LOG] [Local WS] ✅ Terhubung ke Frida Telemetry Server di ws://localhost:8080 @ http://localhost:5174/src/hooks/useRoomData.ts:269
+[  218438ms] [ERROR] Warning: React has detected a change in the order of Hooks called by %s. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks
+
+   Previous render            Next render
+   ------------------------------------------------------
+%s   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+%s SesaatLagi 1. useState                   useState
+2. useState                   useState
+3. useRef                     useRef
+4. useEffect                  useEffect
+5. useEffect                  useEffect
+6. useCallback                useCallback
+7. useCallback                useCallback
+8. useState                   useCallback
+ 
+    at SesaatLagi (http://localhost:5174/src/pages/SesaatLagi/index.tsx?t=1791516325687:28:31)
+    at div
+    at MotionDOMComponent (http://localhost:5174/node_modules/.vite/deps/motion_react.js?v=6bb31510:9368:40)
+    at SesaatLagiScreen
+    at div
+    at div
+    at ScaledScreen (http://localhost:5174/src/App.tsx:31:25)
+    at div
+    at MotionDOMComponent (http://localhost:5174/node_modules/.vite/deps/motion_react.js?v=6bb31510:9368:40)
+    at RenderedRoute (http://localhost:5174/node_modules/.vite/deps/react-router.js?v=6bb31510:6299:26)
+    at Routes (http://localhost:5174/node_modules/.vite/deps/react-router.js?v=6bb31510:7148:3)
+    at PopChildMeasure (http://localhost:5174/node_modules/.vite/deps/motion_react.js?v=6bb31510:8494:23)
+    at PopChild (http://localhost:5174/node_modules/.vite/deps/motion_react.js?v=6bb31510:8522:21)
+    at PresenceChild (http://localhost:5174/node_modules/.vite/deps/motion_react.js?v=6bb31510:8574:24)
+    at AnimatePresence (http://localhost:5174/node_modules/.vite/deps/motion_react.js?v=6bb31510:8661:26)
+    at AnimatedRoutes (http://localhost:5174/src/App.tsx:278:20)
+    at div
+    at Router (http://localhost:5174/node_modules/.vite/deps/react-router.js?v=6bb31510:7089:13)
+    at BrowserRouter (http://localhost:5174/node_modules/.vite/deps/react-router.js?v=6bb31510:10285:3)
+    at div
+    at App @ http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:520
+[  218757ms] Error: Should have a queue. This is likely a bug in React. Please file an issue.
+    at updateReducer (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:11778:19)
+    at updateState (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:12069:18)
+    at Object.useState (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:12801:24)
+    at useState (http://localhost:5174/node_modules/.vite/deps/chunk-KQSTW7SD.js?v=6bb31510:1066:29)
+    at useRoomData (http://localhost:5174/src/hooks/useRoomData.ts:344:27)
+    at useDisplayTeamNames (http://localhost:5174/src/hooks/useTeamNames.ts:71:20)
+    at SesaatLagi (http://localhost:5174/src/pages/SesaatLagi/index.tsx?t=1791516325687:29:21)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:11596:26)
+    at updateFunctionComponent (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:14630:28)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:15972:22)
+[  218763ms] Error: Should have a queue. This is likely a bug in React. Please file an issue.
+    at updateReducer (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:11778:19)
+    at updateState (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:12069:18)
+    at Object.useState (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:12801:24)
+    at useState (http://localhost:5174/node_modules/.vite/deps/chunk-KQSTW7SD.js?v=6bb31510:1066:29)
+    at useRoomData (http://localhost:5174/src/hooks/useRoomData.ts:344:27)
+    at useDisplayTeamNames (http://localhost:5174/src/hooks/useTeamNames.ts:71:20)
+    at SesaatLagi (http://localhost:5174/src/pages/SesaatLagi/index.tsx?t=1791516325687:29:21)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:11596:26)
+    at updateFunctionComponent (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:14630:28)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:15972:22)
+[  218514ms] [ERROR] The above error occurred in the <SesaatLagi> component:
+
+    at SesaatLagi (http://localhost:5174/src/pages/SesaatLagi/index.tsx?t=1791516325687:28:31)
+    at div
+    at MotionDOMComponent (http://localhost:5174/node_modules/.vite/deps/motion_react.js?v=6bb31510:9368:40)
+    at SesaatLagiScreen
+    at div
+    at div
+    at ScaledScreen (http://localhost:5174/src/App.tsx:31:25)
+    at div
+    at MotionDOMComponent (http://localhost:5174/node_modules/.vite/deps/motion_react.js?v=6bb31510:9368:40)
+    at RenderedRoute (http://localhost:5174/node_modules/.vite/deps/react-router.js?v=6bb31510:6299:26)
+    at Routes (http://localhost:5174/node_modules/.vite/deps/react-router.js?v=6bb31510:7148:3)
+    at PopChildMeasure (http://localhost:5174/node_modules/.vite/deps/motion_react.js?v=6bb31510:8494:23)
+    at PopChild (http://localhost:5174/node_modules/.vite/deps/motion_react.js?v=6bb31510:8522:21)
+    at PresenceChild (http://localhost:5174/node_modules/.vite/deps/motion_react.js?v=6bb31510:8574:24)
+    at AnimatePresence (http://localhost:5174/node_modules/.vite/deps/motion_react.js?v=6bb31510:8661:26)
+    at AnimatedRoutes (http://localhost:5174/src/App.tsx:278:20)
+    at div
+    at Router (http://localhost:5174/node_modules/.vite/deps/react-router.js?v=6bb31510:7089:13)
+    at BrowserRouter (http://localhost:5174/node_modules/.vite/deps/react-router.js?v=6bb31510:10285:3)
+    at div
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:14079
+[  218825ms] Error: Should have a queue. This is likely a bug in React. Please file an issue.
+    at updateReducer (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:11778:19)
+    at updateState (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:12069:18)
+    at Object.useState (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:12801:24)
+    at useState (http://localhost:5174/node_modules/.vite/deps/chunk-KQSTW7SD.js?v=6bb31510:1066:29)
+    at useRoomData (http://localhost:5174/src/hooks/useRoomData.ts:344:27)
+    at useDisplayTeamNames (http://localhost:5174/src/hooks/useTeamNames.ts:71:20)
+    at SesaatLagi (http://localhost:5174/src/pages/SesaatLagi/index.tsx?t=1791516325687:29:21)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:11596:26)
+    at updateFunctionComponent (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:14630:28)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:15972:22)

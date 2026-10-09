@@ -52,7 +52,7 @@ function usePlayerRole(ipos: number) {
 
 function RoleImage({ ipos }: { ipos: number }) {
   const role = usePlayerRole(ipos);
-  const src = role > 0 ? `/assets/lane/${role}.png` : img21;
+  const src = role > 0 ? `/assets/lane/${role}.svg` : img21;
   return (
     <div
       className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+0.5px)] size-[80px] top-1/2"
@@ -70,7 +70,7 @@ import svgPaths from "./svg-l16smdwosq";
 import imgBackgroundImage from "./9e72be5c6dd2ff24c0dbe0129186324d1805d951.png";
 import imgBanBlue01 from "./3de34b4671e23cdd7cc6746069cabc97606109cc.png";
 import imgBanBlue02 from "./b216ba322991141569ea859df27f40068d107865.png";
-import img21 from "./71927f1dd2c7d1bd58a5899753e0d36780f6c033.png";
+import img21 from "../../../public/assets/logo.png";
 import imgCenterImage from "./848b204f9decb24d5f58e930a3a150d13e1b2fd2.png";
 import imgCenterImage1 from "./38c1faaf3162709378f424e1c042906c553c8938.png";
 import imgUserAvatar from "./f259c856a17bf9515576235ee603d83439a100bc.png";
@@ -476,6 +476,9 @@ function MidSection() {
   if (mapDraw === 3) mapText = "FLYING CLOUD";
   if (mapDraw === 4) mapText = "EXPANDING RIVER";
   if (mapDraw === 5) mapText = "EXPANDING RIVER dua";
+  if (mapDraw === 12) mapText = "VISION REVEAL";
+  if (mapDraw === 15) mapText = "HEALING TURTLE";
+  if (mapDraw === 16) mapText = "GOLDEN TURET";
 
   let phaseText = "BANNING";
   if (draftPhase >= 1 && draftPhase <= 3) phaseText = "BANNING";
@@ -936,7 +939,7 @@ function LogoContainer() {
         </div>
       </div>
       <div
-        className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+0.5px)] size-[80px] top-[calc(50%-34.5px)]"
+        className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+0.5px)] w-[115px] h-[115px] top-[calc(50%-34.5px)]"
         data-name="LOGO"
       >
         <motion.div
@@ -1168,7 +1171,9 @@ function useRolePair(role: number) {
   const bySlot = (team: number) =>
     players
       .filter((p: any) => Number(p?.team) === team)
-      .sort((a: any, b: any) => (Number(a?.ipos) || 0) - (Number(b?.ipos) || 0));
+      .sort(
+        (a: any, b: any) => (Number(a?.ipos) || 0) - (Number(b?.ipos) || 0),
+      );
   const blueSorted = bySlot(1);
   const redSorted = bySlot(2);
   // Utama: pasangan se-role; fallback: pasangan se-urutan slot (role belum ada di live data).
@@ -1300,35 +1305,38 @@ function TeamNameLabel({ team }: { team: 1 | 2 }) {
   );
 }
 
-/* Sequence: VS per-role (2.6s tiap role) → TeamPreview looping + NAMA TEAM sampai game dimulai.
- * Pemicu: SEMUA fase draft (BANNING, PICKING, PREPARATION, numerik 1-7) — tampil sejak draftpick
- * dimulai begitu overlay menerima data player. Mati saat game dimulai (IN_GAME / gameState >= 4).
+/* Sequence: VS per-role (5s tiap role) → TeamPreview looping blue/red (5s tiap tim) sampai game dimulai.
+ * Pemicu otomatis: setidaknya satu player punya pickPhase === true (draft pick dimulai).
+ * Mati saat game dimulai (IN_GAME / gameState >= 4).
  * Untuk cek desain via MCP tanpa live data: tambah ?preview=vs atau ?preview=team di URL.
  */
 function PreviewSequence() {
   const data = useContext(DraftContext);
-  const draftPhase = data?.draftPhase;
+  const players = Array.isArray(data?.players) ? data.players : [];
   const gameState = Number(data?.gameState ?? 0);
+  const draftPhase = data?.draftPhase;
   const forcePreview =
     typeof window !== "undefined"
       ? new URLSearchParams(window.location.search).get("preview")
       : null;
 
   const phaseStr = String(draftPhase ?? "").toUpperCase();
-  const phaseNum = Number(draftPhase);
-  const isDraftPhase =
-    (Number.isFinite(phaseNum) && phaseNum >= 1 && phaseNum <= 7) ||
-    phaseStr.includes("BAN") ||
-    phaseStr.includes("PICK") ||
-    phaseStr === "PREPARATION";
+  // Otomatis tampil saat draft pick dimulai: minimal satu player pickPhase true.
+  const hasPickPhase = players.some(
+    (p: any) =>
+      p?.pickPhase === true || p?.pickPhase === 1 || p?.pickPhase === "true",
+  );
   const gameStarted = gameState >= 4 || phaseStr === "IN_GAME";
   const showPreview =
     forcePreview === "vs" || forcePreview === "team"
       ? true
-      : isDraftPhase && !gameStarted;
+      : hasPickPhase && !gameStarted;
   const [vsIndex, setVsIndex] = useState(0);
   const [showTeam, setShowTeam] = useState(forcePreview === "team");
   const [teamSide, setTeamSide] = useState<1 | 2>(1);
+
+  const VS_INTERVAL = 5000;
+  const TEAM_INTERVAL = 5000;
 
   useEffect(() => {
     if (!showPreview) return;
@@ -1338,29 +1346,34 @@ function PreviewSequence() {
     }
     if (forcePreview === "vs") {
       setShowTeam(false);
-      const t = setInterval(() => setVsIndex((i) => (i + 1) % 5), 2600);
+      const t = setInterval(() => setVsIndex((i) => (i + 1) % 5), VS_INTERVAL);
       return () => clearInterval(t);
     }
     setVsIndex(0);
     setShowTeam(false);
+    setTeamSide(1);
     const t = setInterval(() => {
       setVsIndex((i) => {
         if (i >= 4) {
           clearInterval(t);
-          setTimeout(() => setShowTeam(true), 700);
+          setTimeout(() => setShowTeam(true), 500);
           return i;
         }
         return i + 1;
       });
-    }, 2600);
+    }, VS_INTERVAL);
     return () => clearInterval(t);
-  }, [showPreview, forcePreview, isDraftPhase]);
+  }, [showPreview, forcePreview]);
 
   useEffect(() => {
     if (!showTeam || !showPreview) return;
-    const t = setInterval(() => setTeamSide((s) => (s === 1 ? 2 : 1)), 4000);
+    if (forcePreview === "team") return;
+    const t = setInterval(
+      () => setTeamSide((s) => (s === 1 ? 2 : 1)),
+      TEAM_INTERVAL,
+    );
     return () => clearInterval(t);
-  }, [showTeam, showPreview]);
+  }, [showTeam, showPreview, forcePreview]);
 
   if (!showPreview) return null;
   const role = vsIndex + 1;

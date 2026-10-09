@@ -1,0 +1,336 @@
+.play-offs-v-1,
+.play-offs-v-1 * {
+  box-sizing: border-box;
+}
+.play-offs-v-1 {
+  height: 1080px;
+  position: relative;
+}
+.rectangle-39930 {
+  background: #533920;
+  width: 1920px;
+  height: 100px;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+}
+.rectangle-39932 {
+  background: #533920;
+  width: 1920px;
+  height: 100px;
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+}
+.group-3 {
+  position: absolute;
+  inset: 0;
+}
+.logo-intechfest-2 {
+  width: 700px;
+  height: 740px;
+  position: absolute;
+  left: 1217px;
+  top: 173px;
+  object-fit: cover;
+  aspect-ratio: 700/740;
+}
+.ellipse-7 {
+  background: radial-gradient(
+    closest-side,
+    rgba(83, 57, 32, 1) 0%,
+    rgba(83, 57, 32, 0) 52.88461446762085%
+  );
+  border-radius: 50%;
+  width: 820.1px;
+  height: 408.16px;
+  position: absolute;
+  left: 1081px;
+  top: 397.94px;
+}
+.ellipse-8 {
+  background: radial-gradient(
+    closest-side,
+    rgba(83, 57, 32, 1) 0%,
+    rgba(83, 57, 32, 0) 52.88461446762085%
+  );
+  border-radius: 50%;
+  width: 820.1px;
+  height: 408.16px;
+  position: absolute;
+  left: 1099.9px;
+  top: 281.73px;
+}
+.frame-40 {
+  display: flex;
+  flex-direction: row;
+  gap: 203px;
+  align-items: center;
+  justify-content: center;
+  width: 1920px;
+  height: 980px;
+  position: absolute;
+  left: 0px;
+  top: 76px;
+}
+.peyisihan {
+  display: flex;
+  flex-direction: column;
+  gap: 38px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+.m-1 {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 322px;
+  height: 187px;
+  position: relative;
+}
+.team-bracket {
+  background: #e8d367;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+.team-name {
+  color: #000000;
+  text-align: center;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.m-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 322px;
+  height: 187px;
+  position: relative;
+}
+.m-3 {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 322px;
+  height: 187px;
+  position: relative;
+}
+.semifinal {
+  display: flex;
+  flex-direction: column;
+  gap: 38px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+.m-4 {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 322px;
+  height: 187px;
+  position: relative;
+}
+.m-5 {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 322px;
+  height: 187px;
+  position: relative;
+}
+.final {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 322px;
+  height: 187px;
+  position: relative;
+}
+.playoffs-bracket {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 64px;
+  font-weight: 700;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 1278px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.group-4 {
+  height: auto;
+  position: absolute;
+  left: 596px;
+  top: 292px;
+  overflow: visible;
+}
+.group-6 {
+  height: auto;
+  position: absolute;
+  left: 596px;
+  top: 522px;
+  overflow: visible;
+}
+.group-5 {
+  height: auto;
+  position: absolute;
+  left: 596px;
+  top: 728px;
+  overflow: visible;
+}
+.group-7 {
+  height: auto;
+  position: absolute;
+  left: 1121px;
+  top: 411px;
+  overflow: visible;
+}
+.group-8 {
+  height: auto;
+  position: absolute;
+  left: 1121px;
+  top: 616px;
+  overflow: visible;
+}
+.rectangle-39931 {
+  background: #d69345;
+  width: 642px;
+  height: 100px;
+  position: absolute;
+  left: 1278px;
+  top: 0px;
+}
+.intechfest {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 64px;
+  font-weight: 700;
+  position: absolute;
+  left: 1278px;
+  top: 0px;
+  width: 642px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.frame-41 {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  align-items: center;
+  justify-content: center;
+  width: 322px;
+  position: absolute;
+  left: 274px;
+  top: 173px;
+}
+._17-oktober-2026 {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Inter-Medium", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.k-3-b-317-318 {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.frame-42 {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  align-items: center;
+  justify-content: center;
+  width: 322px;
+  position: absolute;
+  left: 799px;
+  top: 277px;
+}
+.frame-43 {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  align-items: center;
+  justify-content: center;
+  width: 322px;
+  position: absolute;
+  left: 1324px;
+  top: 393px;
+}
+._21-oktober-2026 {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Inter-Medium", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.audit-k-3 {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

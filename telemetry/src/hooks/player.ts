@@ -10,6 +10,7 @@ import type { KillParticipant } from "../types/kill.js";
 import { getDeathSpanMs, refreshDeathSpans } from "./death.js";
 import { playerBanMap } from "./draft.js";
 import { getMatchTimeMs } from "./match.js";
+import { lockedPickMap, pickPhaseMap } from "./pick.js";
 import type { EmblemSkill, PlayerData } from "../types/player.js";
 
 let roomDataOffsets: Record<string, number> = {};
@@ -731,9 +732,10 @@ export function extractPlayerData(
               battleSpell: offSummon > 0 ? p.add(offSummon).readInt() : 0,
               emblem: offRune > 0 ? p.add(offRune).readInt() : 0,
               emblemSkills: emblemSkills,
-              pickPhase: false,
+              pickPhase: pickPhaseMap.has(uidStr),
               banPhase: false,
-              SelHeroID: heroId > 0 ? heroId : uiChoose,
+              // Eksklusif dari ReportPickHero: belum lock = 0.
+              SelHeroID: lockedPickMap.get(uidStr) ?? 0,
               banHero: playerBanMap.get(slot) ?? banHeroId,
               hp: 0,
               maxHp: 0,
@@ -1200,9 +1202,14 @@ export function extractPlayerData(
                   battleSpell: synSummon || 0,
                   emblem: synRuneId || 0,
                   emblemSkills: synEmblemSkills,
-                  pickPhase: false,
+                  pickPhase: accIdStr
+                    ? pickPhaseMap.has(accIdStr)
+                    : false,
                   banPhase: false,
-                  SelHeroID: finalHeroId,
+                  // Eksklusif dari ReportPickHero: belum lock = 0.
+                  SelHeroID: accIdStr
+                    ? (lockedPickMap.get(accIdStr) ?? 0)
+                    : 0,
                   banHero: playerBanMap.get(newSlot) || 0,
                   hp: 0,
                   maxHp: 0,
@@ -1253,16 +1260,16 @@ export function extractPlayerData(
                   }
                 }
 
+                // SelHeroID eksklusif dari ReportPickHero (lockedPickMap):
+                // blok live/syn di bawah hanya boleh menyentuh heroid.
                 if (synHeroId > 0 && synHeroId <= 500) {
                   targetPlayer.heroid = synHeroId;
-                  targetPlayer.SelHeroID = synHeroId;
                 } else if (
                   (targetPlayer.heroid <= 0 || targetPlayer.heroid > 500) &&
                   heroIdLp > 0 &&
                   heroIdLp <= 500
                 ) {
                   targetPlayer.heroid = heroIdLp;
-                  targetPlayer.SelHeroID = heroIdLp;
                 } else if (
                   targetPlayer.heroid <= 0 ||
                   targetPlayer.heroid > 500
@@ -1274,7 +1281,6 @@ export function extractPlayerData(
                       const hId = logicPlayerPtr.add(offOriginHero).readInt();
                       if (hId > 0 && hId <= 500) {
                         targetPlayer.heroid = hId;
-                        targetPlayer.SelHeroID = hId;
                       }
                     } catch (eHId) {}
                   }
@@ -1282,13 +1288,31 @@ export function extractPlayerData(
 
                 // RoomData adalah sumber pick: hero valid dari RoomData
                 // dipertahankan agar payload sesuai lobby/draft.
+                // heroid = fase pemilihan (pre-lock, mengikuti RoomData).
                 if (roomHero > 0 && roomHero <= 500) {
                   targetPlayer.heroid = roomHero;
-                  targetPlayer.SelHeroID = roomHero;
                 }
                 if (roomName && roomName !== "") {
                   targetPlayer.name = roomName;
                 }
+
+                // SelHeroID eksklusif dari ReportPickHero (lockedPickMap).
+                // pickPhase dari ReportPickHeroStart.
+                try {
+                  const uidKey =
+                    targetPlayer.id && targetPlayer.id !== "0"
+                      ? targetPlayer.id
+                      : accIdStr && accIdStr !== "0"
+                        ? accIdStr
+                        : null;
+                  if (uidKey) {
+                    if (pickPhaseMap.has(uidKey)) targetPlayer.pickPhase = true;
+                    const locked = lockedPickMap.get(uidKey);
+                    if (locked && locked > 0 && locked <= 500) {
+                      targetPlayer.SelHeroID = locked;
+                    }
+                  }
+                } catch (e) {}
 
                 if (synSummon > 0) targetPlayer.battleSpell = synSummon;
                 if (synRuneId > 0) targetPlayer.emblem = synRuneId;

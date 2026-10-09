@@ -1,0 +1,87 @@
+.vicktory,
+.vicktory * {
+  box-sizing: border-box;
+}
+.vicktory {
+  background: #ffffff;
+  height: 1080px;
+  position: relative;
+  overflow: hidden;
+}
+.image-2 {
+  width: 1922px;
+  height: 1080px;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  filter: blur(16.5px);
+  object-fit: cover;
+  aspect-ratio: 1922/1080;
+}
+.slide-16-9-2 {
+  background: #ffffff;
+  border-style: solid;
+  border-color: #e8d367;
+  border-width: 11px;
+  width: 1095px;
+  height: 616px;
+  position: absolute;
+  left: 50%;
+  translate: -50%;
+  top: 100px;
+  overflow: hidden;
+}
+.rectangle-40 {
+  background: linear-gradient(
+    85.28deg,
+    rgba(74, 22, 22, 0.62) 14.704073965549469%,
+    rgba(151, 45, 45, 0.62) 63.27076554298401%,
+    rgba(176, 52, 52, 0) 100%
+  );
+  width: 1213px;
+  height: 271px;
+  position: absolute;
+  left: -18px;
+  top: 809px;
+}
+.victory-moment {
+  color: #fce98a;
+  text-align: left;
+  font-family: "Koulen-Regular", sans-serif;
+  font-size: 160px;
+  font-weight: 400;
+  position: absolute;
+  left: 77px;
+  top: 791px;
+}
+.name-team-win {
+  position: absolute;
+  inset: 0;
+}
+.rectangle-38 {
+  width: 356px;
+  height: 53px;
+  position: absolute;
+  left: 413px;
+  top: 738px;
+  overflow: visible;
+}
+.name-team {
+  color: #ffffff;
+  text-align: left;
+  font-family: "LilitaOne-Regular", sans-serif;
+  font-size: 36px;
+  font-weight: 400;
+  position: absolute;
+  left: 431px;
+  top: 742px;
+}
+.logo {
+  width: 213px;
+  height: 213px;
+  position: absolute;
+  left: 77px;
+  top: 100px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}

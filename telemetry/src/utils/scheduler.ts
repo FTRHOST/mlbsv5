@@ -3,6 +3,7 @@ import type { MappedClasses } from "../core/loader.js";
 import { draftState, resetDraftState } from "../hooks/draft.js";
 import { getMapDraw } from "../hooks/mapdraw.js";
 import { extractMatchData, resetMatchDataState } from "../hooks/match.js";
+import { resetPickState } from "../hooks/pick.js";
 import { extractPlayerData } from "../hooks/player.js";
 import type { TelemetryPayload } from "../types/telemetry.js";
 import { debugLog } from "./logger.js";
@@ -61,6 +62,7 @@ export function startTelemetryBroadcaster(classes: MappedClasses): void {
       if (state === 8 && lastGameState !== 8) {
         debugLog("Scheduler", "Resetting telemetry state for new match...");
         resetDraftState();
+        resetPickState();
         resetMatchDataState();
       }
 

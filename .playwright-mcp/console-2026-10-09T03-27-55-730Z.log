@@ -1,0 +1,5 @@
+[    2439ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:21608
+[ 1084870ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://asxrlsdigubhbiykdsml.supabase.co/rest/v1/overlay_control?select=*&id=eq.1:0
+[ 1085030ms] [WARNING] [overlay-db] Tabel "overlay_control" belum ada. Jalankan supabase/migrations/20261009000000_bracket_sesaatlagi.sql di Supabase SQL Editor. @ http://localhost:5174/src/hooks/useOverlayControl.ts:39
+[ 1087942ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://asxrlsdigubhbiykdsml.supabase.co/rest/v1/overlay_control?select=*&id=eq.1:0
+[ 1122075ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://asxrlsdigubhbiykdsml.supabase.co/rest/v1/overlay_control?select=*&id=eq.1:0

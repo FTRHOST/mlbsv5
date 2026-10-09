@@ -7,6 +7,9 @@ import DraftPickLoading from "@/pages/DraftPickLoading/index";
 import Inmatch from "@/pages/Inmatch/index";
 import MapDraw from "@/pages/MapDraw/index";
 import Endmatch from "@/pages/Endmatch/index";
+import Bracket from "@/pages/Bracket/index";
+import SesaatLagi from "@/pages/SesaatLagi/index";
+import Win from "@/pages/Win/index";
 import ControlPanel from "@/pages/ControlPanel/index";
 import RoomPage from "@/pages/Room/index";
 
@@ -115,6 +118,46 @@ function InmatchScreen() {
   );
 }
 
+/* ─── Bracket / SesaatLagi / Win screens — entrance once ─── */
+function BracketScreen() {
+  return (
+    <motion.div
+      className="relative w-full h-full"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.2, ease: "easeOut" }}
+    >
+      <Bracket />
+    </motion.div>
+  );
+}
+
+function SesaatLagiScreen() {
+  return (
+    <motion.div
+      className="relative w-full h-full"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.2, ease: "easeOut" }}
+    >
+      <SesaatLagi />
+    </motion.div>
+  );
+}
+
+function WinScreen() {
+  return (
+    <motion.div
+      className="relative w-full h-full"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.2, ease: "easeOut" }}
+    >
+      <Win />
+    </motion.div>
+  );
+}
+
 function AnimatedRoutes() {
   const location = useLocation();
   return (
@@ -173,6 +216,39 @@ function AnimatedRoutes() {
             transition={{ duration: 0.3 }}
           >
             <ScaledScreen><EndmatchScreen /></ScaledScreen>
+          </motion.div>
+        } />
+        <Route path="/bracket" element={
+          <motion.div
+            className="w-full h-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ScaledScreen><BracketScreen /></ScaledScreen>
+          </motion.div>
+        } />
+        <Route path="/sesaatlagi" element={
+          <motion.div
+            className="w-full h-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ScaledScreen><SesaatLagiScreen /></ScaledScreen>
+          </motion.div>
+        } />
+        <Route path="/win" element={
+          <motion.div
+            className="w-full h-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ScaledScreen><WinScreen /></ScaledScreen>
           </motion.div>
         } />
         <Route path="/control" element={<ControlPanel />} />

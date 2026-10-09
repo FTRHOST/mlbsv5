@@ -1,0 +1,139 @@
+.selanjutnya,
+.selanjutnya * {
+  box-sizing: border-box;
+}
+.selanjutnya {
+  background: #ffffff;
+  height: 1080px;
+  position: relative;
+  overflow: hidden;
+}
+.image-2 {
+  width: 1922px;
+  height: 1080px;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  filter: blur(16.5px);
+  object-fit: cover;
+  aspect-ratio: 1922/1080;
+}
+.rectangle-40 {
+  background: linear-gradient(
+    85.28deg,
+    rgba(74, 22, 22, 0.62) 14.704073965549469%,
+    rgba(151, 45, 45, 0.62) 63.27076554298401%,
+    rgba(176, 52, 52, 0) 100%
+  );
+  width: 1940px;
+  height: 271px;
+  position: absolute;
+  left: -18px;
+  top: 809px;
+}
+.pertandingan-selanjutnya {
+  color: #fce98a;
+  text-align: left;
+  font-family: "Koulen-Regular", sans-serif;
+  font-size: 96px;
+  font-weight: 400;
+  position: absolute;
+  left: 77px;
+  top: 890px;
+}
+.pertandingan-selanjutnya2 {
+  color: #fce98a;
+  text-align: left;
+  font-family: "Koulen-Regular", sans-serif;
+  font-size: 64px;
+  font-weight: 400;
+  position: absolute;
+  left: 77px;
+  top: 833px;
+}
+.info-sesaat-lagi {
+  position: absolute;
+  inset: 0;
+}
+.rectangle-38 {
+  width: 356px;
+  height: 53px;
+  position: absolute;
+  left: 3px;
+  top: 748px;
+  overflow: visible;
+}
+.name-team {
+  color: #ffffff;
+  text-align: left;
+  font-family: "LilitaOne-Regular", sans-serif;
+  font-size: 36px;
+  font-weight: 400;
+  position: absolute;
+  left: 21px;
+  top: 752px;
+}
+.info-babak {
+  position: absolute;
+  inset: 0;
+}
+.rectangle-382 {
+  width: 356px;
+  height: 53px;
+  position: absolute;
+  left: 1922px;
+  top: 748px;
+  overflow: visible;
+}
+.info-babak2 {
+  color: #ffffff;
+  text-align: left;
+  font-family: "LilitaOne-Regular", sans-serif;
+  font-size: 36px;
+  font-weight: 400;
+  position: absolute;
+  left: 1653px;
+  top: 752px;
+}
+.akan-dimulai {
+  color: #ffffff;
+  text-align: left;
+  font-family: "LilitaOne-Regular", sans-serif;
+  font-size: 36px;
+  font-weight: 400;
+  position: absolute;
+  left: 1604px;
+  top: 844px;
+}
+.timer {
+  color: #ffffff;
+  text-align: left;
+  font-family: "LilitaOne-Regular", sans-serif;
+  font-size: 96px;
+  font-weight: 400;
+  position: absolute;
+  left: 1592px;
+  top: 901px;
+}
+.slide-16-9-3 {
+  background: #ffffff;
+  border-style: solid;
+  border-color: #e8d367;
+  border-width: 11px;
+  width: 1095px;
+  height: 616px;
+  position: absolute;
+  left: 50%;
+  translate: -50%;
+  top: 100px;
+  overflow: hidden;
+}
+.logo {
+  width: 213px;
+  height: 213px;
+  position: absolute;
+  left: 74px;
+  top: 100px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}

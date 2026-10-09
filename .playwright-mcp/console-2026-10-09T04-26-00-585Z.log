@@ -1,0 +1,12 @@
+[    9316ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:21608
+[   10746ms] [LOG] [Local WS] ✅ Terhubung ke Frida Telemetry Server di ws://127.0.0.1:8080 @ http://localhost:5174/src/hooks/useRoomData.ts:269
+[   20164ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5174/node_modules/.vite/deps/chunk-TPJYOTJD.js?v=6bb31510:21608
+[   22318ms] [LOG] [Local WS] ✅ Terhubung ke Frida Telemetry Server di ws://127.0.0.1:8080 @ http://localhost:5174/src/hooks/useRoomData.ts:269
+[  474853ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  476869ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  478874ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  480880ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  482885ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  484892ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  486897ms] [ERROR] WebSocket connection to 'ws://localhost:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267
+[  488906ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:8080/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:5174/src/hooks/useRoomData.ts:267

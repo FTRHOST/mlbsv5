@@ -5,6 +5,7 @@ import { setupKillHook } from "./hooks/kill.js";
 import { setupMapDrawHook } from "./hooks/mapdraw.js";
 import { setupMatchHooks } from "./hooks/match.js";
 import { setupObjectiveHook } from "./hooks/objective.js";
+import { setupPickHooks } from "./hooks/pick.js";
 import { setupPlayerHooks } from "./hooks/player.js";
 import { setupVersionHook } from "./hooks/version.js";
 import { debugLog } from "./utils/logger.js";
@@ -19,6 +20,7 @@ startStealthBootstrap((classes: MappedClasses) => {
   setupObjectiveHook(classes.kLogicManager, classes.kTortoise, classes.kBoss);
   setupMatchHooks(classes.kEndCtrl, classes.kTimerBase, classes.kLogicFightData, classes.kLogicManager);
   setupKillHook(classes.kCompetitionData, classes.kLogicManager);
+  setupPickHooks(classes.kCompetitionData);
   setupMapDrawHook(classes.kLogicManager);
   setupPlayerHooks({
     kSystemData: classes.kSystemData,
