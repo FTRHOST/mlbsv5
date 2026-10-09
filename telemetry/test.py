@@ -12,7 +12,7 @@ CONNECTED_CLIENTS = set()
 TEST_DATA = {
     "type": "mlbb_live_data",
     "payload": {
-        "gameState": 3,
+        "gameState": 6,
         "draftPhase": "BANNING",
         "draftTimer": 20,
         "mapDraw": 4,
