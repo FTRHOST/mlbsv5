@@ -1,0 +1,72 @@
+- generic [ref=e9]:
+  - generic [ref=e11]:
+    - generic [ref=e13]:
+      - paragraph: BLUE TEAM
+    - generic [ref=e23]:
+      - paragraph: RED TEAM
+  - generic [ref=e24]:
+    - generic [ref=e26]:
+      - generic [ref=e33]:
+        - generic:
+          - paragraph: NAMA
+        - generic:
+          - paragraph: HEROO NAME
+          - paragraph
+      - generic [ref=e41]:
+        - generic:
+          - paragraph: NAMA
+        - generic:
+          - paragraph: HEROO NAME
+          - paragraph
+    - generic [ref=e45]:
+      - generic [ref=e52]:
+        - generic:
+          - paragraph: NAMA
+        - generic:
+          - paragraph: HEROO NAME
+          - paragraph
+      - generic [ref=e60]:
+        - generic:
+          - paragraph: NAMA
+        - generic:
+          - paragraph: HEROO NAME
+          - paragraph
+    - generic [ref=e64]:
+      - generic [ref=e71]:
+        - generic:
+          - paragraph: NAMA
+        - generic:
+          - paragraph: HEROO NAME
+          - paragraph
+      - generic [ref=e79]:
+        - generic:
+          - paragraph: NAMA
+        - generic:
+          - paragraph: HEROO NAME
+          - paragraph
+    - generic [ref=e83]:
+      - generic [ref=e90]:
+        - generic:
+          - paragraph: NAMA
+        - generic:
+          - paragraph: HEROO NAME
+          - paragraph
+      - generic [ref=e98]:
+        - generic:
+          - paragraph: NAMA
+        - generic:
+          - paragraph: HEROO NAME
+          - paragraph
+    - generic [ref=e102]:
+      - generic [ref=e109]:
+        - generic:
+          - paragraph: NAMA
+        - generic:
+          - paragraph: HEROO NAME
+          - paragraph
+      - generic [ref=e117]:
+        - generic:
+          - paragraph: NAMA
+        - generic:
+          - paragraph: HEROO NAME
+          - paragraph

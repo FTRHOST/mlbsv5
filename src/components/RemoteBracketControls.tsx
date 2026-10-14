@@ -52,8 +52,12 @@ const BRACKET_FIELDS: { key: keyof BracketData; label: string }[] = [
   { key: "m4b", label: "M4 · Tim B" },
   { key: "m5a", label: "M5 · Tim A" },
   { key: "m5b", label: "M5 · Tim B" },
-  { key: "fa", label: "Final · Tim A" },
-  { key: "fb", label: "Final · Tim B" },
+  { key: "m6a", label: "M6 · Tim A" },
+  { key: "m6b", label: "M6 · Tim B" },
+  { key: "m7a", label: "M7 · Tim A" },
+  { key: "m7b", label: "M7 · Tim B" },
+  { key: "fa", label: "M8 Final · Tim A" },
+  { key: "fb", label: "M8 Final · Tim B" },
 ];
 
 export function BracketControls() {

@@ -20,6 +20,10 @@ export interface BracketData {
   m4b: string;
   m5a: string;
   m5b: string;
+  m6a: string;
+  m6b: string;
+  m7a: string;
+  m7b: string;
   fa: string;
   fb: string;
 }
@@ -30,13 +34,17 @@ export const BRACKET_DEFAULTS: BracketData = {
   m2a: "TIM 3",
   m2b: "TIM 4",
   m3a: "TIM 5",
-  m3b: "TIM 6",
-  m4a: "TIM 7",
-  m4b: "WINNER M1",
-  m5a: "WINNER M2",
-  m5b: "WINNER M3",
-  fa: "WINNER M4",
-  fb: "WINNER M5",
+  m3b: "WINNER M1",
+  m4a: "TIM 6",
+  m4b: "WINNER M2",
+  m5a: "WINNER M3",
+  m5b: "WINNER M4",
+  m6a: "LOSER M3",
+  m6b: "LOSER M4",
+  m7a: "LOSER M6",
+  m7b: "WINNER M5",
+  fa: "WINNER M6",
+  fb: "WINNER M7",
 };
 
 const BRACKET_KEYS = Object.keys(BRACKET_DEFAULTS) as (keyof BracketData)[];

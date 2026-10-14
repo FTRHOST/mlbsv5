@@ -25,6 +25,14 @@ insert into public.bracket (id)
 values (1)
 on conflict (id) do nothing;
 
+-- Struktur Figma baru (8 match M1–M8 + perebutan tempat 3):
+-- M1: m1a/m1b | M2: m2a/m2b | M3: m3a/m3b | M4: m4a/m4b
+-- M5: m5a/m5b | M6: m6a/m6b | M7: m7a/m7b | M8 (grandfinal): fa/fb
+alter table public.bracket add column if not exists m6a text not null default 'LOSER M3';
+alter table public.bracket add column if not exists m6b text not null default 'LOSER M4';
+alter table public.bracket add column if not exists m7a text not null default 'LOSER M6';
+alter table public.bracket add column if not exists m7b text not null default 'WINNER M5';
+
 -- ─── 2. Tabel sesaatlagi (info match + countdown + winner override) ───
 -- Countdown berbasis TARGET WAKTU: sisa = target_at - now (epoch ms).
 -- total_sec/running/started_at dipertahankan untuk kompatibilitas lama.

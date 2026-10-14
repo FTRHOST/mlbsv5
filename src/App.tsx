@@ -13,7 +13,23 @@ import Win from "@/pages/Win/index";
 import ControlPanel from "@/pages/ControlPanel/index";
 import RoomPage from "@/pages/Room/index";
 
-function ScaledScreen({ children }: { children: React.ReactNode }) {
+// Route overlay (untuk OBS Browser Source) harus transparan —
+// tidak boleh ada bg-black / bg-background opaque dari wrapper.
+export const TRANSPARENT_ROUTES = ["/inmatch"];
+
+export function isTransparentRoute(pathname: string) {
+  return TRANSPARENT_ROUTES.some(
+    (r) => pathname === r || pathname.startsWith(r + "/"),
+  );
+}
+
+function ScaledScreen({
+  children,
+  transparent,
+}: {
+  children: React.ReactNode;
+  transparent?: boolean;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
 
@@ -31,7 +47,10 @@ function ScaledScreen({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div ref={containerRef} className="w-full h-full overflow-hidden flex items-center justify-center bg-black">
+    <div
+      ref={containerRef}
+      className={`w-full h-full overflow-hidden flex items-center justify-center ${transparent ? "bg-transparent" : "bg-black"}`}
+    >
       <div
         style={{
           width: 1920,
@@ -104,11 +123,11 @@ function EndmatchScreen() {
   );
 }
 
-/* ─── Inmatch screen — slide up + fade entrance once ─── */
+/* ─── Inmatch screen — slide up + fade entrance once (overlay transparan) ─── */
 function InmatchScreen() {
   return (
     <motion.div
-      className="relative w-full h-full"
+      className="relative w-full h-full bg-transparent"
       initial={{ opacity: 0, y: 60 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
@@ -160,6 +179,20 @@ function WinScreen() {
 
 function AnimatedRoutes() {
   const location = useLocation();
+
+  // Toggle class di <html> agar CSS bisa memaksa body/#root transparan
+  // saat di route overlay (OBS butuh alpha, bukan sekadar Tailwind).
+  useEffect(() => {
+    const transparent = isTransparentRoute(location.pathname);
+    document.documentElement.classList.toggle(
+      "mlbs-overlay-transparent",
+      transparent,
+    );
+    return () => {
+      document.documentElement.classList.remove("mlbs-overlay-transparent");
+    };
+  }, [location.pathname]);
+
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
@@ -187,13 +220,13 @@ function AnimatedRoutes() {
         } />
         <Route path="/inmatch" element={
           <motion.div
-            className="w-full h-full"
+            className="w-full h-full bg-transparent"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <ScaledScreen><InmatchScreen /></ScaledScreen>
+            <ScaledScreen transparent><InmatchScreen /></ScaledScreen>
           </motion.div>
         } />
         <Route path="/mapdraw" element={
@@ -261,14 +294,26 @@ function AnimatedRoutes() {
   );
 }
 
+function AppShell() {
+  const location = useLocation();
+  const transparent = isTransparentRoute(location.pathname);
+  return (
+    <div
+      className={`w-screen h-screen flex flex-col overflow-hidden ${transparent ? "bg-transparent" : "bg-black"}`}
+    >
+      <div
+        className={`flex-1 min-h-0 overflow-y-auto ${transparent ? "bg-transparent" : ""}`}
+      >
+        <AnimatedRoutes />
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   return (
-    <div className="w-screen h-screen flex flex-col bg-black overflow-hidden">
-      <BrowserRouter>
-        <div className="flex-1 min-h-0 overflow-y-auto">
-          <AnimatedRoutes />
-        </div>
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      <AppShell />
+    </BrowserRouter>
   );
 }

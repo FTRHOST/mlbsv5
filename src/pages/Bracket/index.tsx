@@ -4,32 +4,33 @@ import { useBracketData } from "../../hooks/useBracketControl";
 function TeamBox({ name, delay = 0 }: { name: string; delay?: number }) {
   return (
     <motion.div
-      className="bg-[#e8d367] flex items-center justify-center flex-1 self-stretch overflow-hidden min-h-[88px]"
+      className="bg-[#e8d367] flex items-center justify-center flex-1 self-stretch overflow-hidden min-h-[68px]"
       initial={{ opacity: 0, x: -24 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.45, delay, ease: "easeOut" }}
     >
-      <p className="text-black text-center font-bold text-[32px] leading-tight m-0 px-2 truncate w-full">
+      <p className="text-black text-center font-bold text-[24px] leading-tight m-0 px-2 truncate w-full">
         {name}
       </p>
     </motion.div>
   );
 }
 
-function Match({ a, b, delay = 0 }: { a: string; b: string; delay?: number }) {
+function Match({
+  a,
+  b,
+  delay = 0,
+  className = "w-[304px] h-[147px]",
+}: {
+  a: string;
+  b: string;
+  delay?: number;
+  className?: string;
+}) {
   return (
-    <div className="flex flex-col gap-[11px] items-center justify-center shrink-0 w-[322px] h-[187px]">
+    <div className={`flex flex-col gap-[11px] items-center justify-center shrink-0 ${className}`}>
       <TeamBox name={a} delay={delay} />
       <TeamBox name={b} delay={delay + 0.08} />
-    </div>
-  );
-}
-
-function Schedule({ date, place, className = "" }: { date: string; place: string; className?: string }) {
-  return (
-    <div className={`flex flex-col items-center justify-center w-[322px] absolute ${className}`}>
-      <p className="text-white text-left font-medium text-[20px] self-stretch m-0">{date}</p>
-      <p className="text-white text-center font-bold text-[36px] self-stretch m-0">{place}</p>
     </div>
   );
 }
@@ -45,74 +46,103 @@ export default function Bracket() {
         src="/assets/bracket/bg.png"
         className="absolute inset-0 size-full object-cover pointer-events-none"
       />
-      <div className="absolute left-0 top-0 w-[1920px] h-[100px] bg-[#533920]" />
-      <div className="absolute left-0 bottom-0 w-[1920px] h-[100px] bg-[#533920]" />
-      {/* Glow */}
-      <div
-        className="absolute rounded-full pointer-events-none"
-        style={{
-          width: 820,
-          height: 408,
-          left: 1081,
-          top: 398,
-          background:
-            "radial-gradient(closest-side, rgba(83,57,32,1) 0%, rgba(83,57,32,0) 53%)",
-        }}
-      />
-      <div
-        className="absolute rounded-full pointer-events-none"
-        style={{
-          width: 820,
-          height: 408,
-          left: 1100,
-          top: 282,
-          background:
-            "radial-gradient(closest-side, rgba(83,57,32,1) 0%, rgba(83,57,32,0) 53%)",
-        }}
-      />
-      <img
-        alt=""
-        src="/assets/bracket/logo-intechfest.png"
-        className="absolute w-[700px] h-[740px] object-cover pointer-events-none"
-        style={{ left: 1217, top: 173 }}
-      />
+      {/* Footer */}
+      <div className="absolute left-0 bottom-0 w-[1920px] h-[70px] bg-[#533920]" />
 
-      {/* Bracket columns */}
-      <div className="absolute left-0 top-[76px] w-[1920px] h-[980px] flex flex-row gap-[203px] items-center justify-center">
-        <div className="flex flex-col gap-[38px] items-center justify-center">
-          <Match a={bracket.m1a} b={bracket.m1b} delay={0.3} />
-          <Match a={bracket.m2a} b={bracket.m2b} delay={0.45} />
-          <Match a={bracket.m3a} b={bracket.m3b} delay={0.6} />
-        </div>
-        <div className="flex flex-col gap-[38px] items-center justify-center">
-          <Match a={bracket.m4a} b={bracket.m4b} delay={0.75} />
-          <Match a={bracket.m5a} b={bracket.m5b} delay={0.9} />
-        </div>
-        <div className="flex flex-col gap-[11px] items-center justify-center w-[322px] h-[187px]">
-          <TeamBox name={bracket.fa} delay={1.05} />
-          <TeamBox name={bracket.fb} delay={1.13} />
-        </div>
+      {/* Logo + glow */}
+      <div className="absolute w-[700px] h-[740px] overflow-hidden pointer-events-none" style={{ left: 1217, top: 173 }}>
+        <img
+          alt=""
+          src="/assets/bracket/logo-container.png"
+          data-name="Logo Container"
+          className="absolute left-0 top-0 w-[700px] h-[740px] object-cover pointer-events-none"
+        />
+        <div
+          className="absolute rounded-full"
+          style={{
+            width: 820.1,
+            height: 408.16,
+            left: 46,
+            top: 224.21,
+            background:
+              "radial-gradient(closest-side, rgba(83,57,32,1) 0%, rgba(83,57,32,0) 53%)",
+          }}
+        />
+        <div
+          className="absolute rounded-full"
+          style={{
+            width: 820.1,
+            height: 408.16,
+            left: 64.9,
+            top: 108,
+            background:
+              "radial-gradient(closest-side, rgba(83,57,32,1) 0%, rgba(83,57,32,0) 53%)",
+          }}
+        />
       </div>
 
-      {/* Connectors */}
-      <img alt="" src="/assets/bracket/connector-1.svg" className="absolute pointer-events-none" style={{ left: 596, top: 292 }} />
-      <img alt="" src="/assets/bracket/connector-2.svg" className="absolute pointer-events-none" style={{ left: 596, top: 522 }} />
-      <img alt="" src="/assets/bracket/connector-3.svg" className="absolute pointer-events-none" style={{ left: 596, top: 728 }} />
-      <img alt="" src="/assets/bracket/connector-4.svg" className="absolute pointer-events-none" style={{ left: 1121, top: 411 }} />
-      <img alt="" src="/assets/bracket/connector-5.svg" className="absolute pointer-events-none" style={{ left: 1121, top: 616 }} />
+      {/* Bracket */}
+      <div className="absolute left-0 top-[100px] w-[1917px] h-[911px] flex flex-row gap-[25px] items-center justify-center pr-[104px]">
+        <div className="flex flex-col gap-[35px] items-end justify-center shrink-0 w-[1366px] relative">
+          {/* Baris atas: M1–M5 */}
+          <div className="flex flex-row gap-[25px] items-center justify-end self-stretch shrink-0 h-[438px] relative">
+            {/* M1 + M2 */}
+            <div className="flex flex-row gap-[25px] items-center justify-center shrink-0 relative">
+              <div className="flex flex-col gap-[69px] items-start justify-start shrink-0 relative">
+                <Match a={bracket.m1a} b={bracket.m1b} delay={0.3} />
+                <Match a={bracket.m2a} b={bracket.m2b} delay={0.42} />
+              </div>
+              <div className="flex flex-col gap-[139px] items-center justify-center shrink-0 relative">
+                <img alt="" src="/assets/bracket/conn-m1.svg" className="shrink-0 w-[101px] h-[89px] pointer-events-none" />
+                <img alt="" src="/assets/bracket/conn-m2.svg" className="shrink-0 w-[101px] h-[80px] pointer-events-none" />
+              </div>
+            </div>
+            {/* M3 + M4 */}
+            <div className="flex flex-row gap-[25px] items-center justify-center shrink-0 relative">
+              <div className="flex flex-col gap-[69px] items-start justify-start shrink-0 relative">
+                <Match a={bracket.m3a} b={bracket.m3b} delay={0.54} />
+                <Match a={bracket.m4a} b={bracket.m4b} delay={0.66} />
+              </div>
+              <img alt="" src="/assets/bracket/conn-m3m4.svg" className="shrink-0 w-[101px] h-[222px] pointer-events-none" />
+            </div>
+            {/* M5 */}
+            <div className="flex flex-col gap-[69px] items-center justify-center shrink-0 relative">
+              <Match a={bracket.m5a} b={bracket.m5b} delay={0.78} />
+            </div>
+          </div>
+          {/* Baris bawah: M6 + M7 */}
+          <div className="flex flex-row gap-[25px] items-center justify-end self-stretch shrink-0 h-[438px] relative">
+            <div className="flex flex-row gap-[25px] items-center justify-center shrink-0 relative">
+              <Match a={bracket.m6a} b={bracket.m6b} delay={0.9} />
+              <img alt="" src="/assets/bracket/conn-m6.svg" className="shrink-0 w-[101px] h-[84px] pointer-events-none" />
+            </div>
+            <div className="flex flex-col gap-[69px] items-center justify-center shrink-0 relative">
+              <Match a={bracket.m7a} b={bracket.m7b} delay={1.02} />
+            </div>
+          </div>
+        </div>
+
+        <img alt="" src="/assets/bracket/conn-final.svg" className="shrink-0 w-[101px] h-[483px] pointer-events-none" />
+
+        {/* Grand final M8 */}
+        <div className="flex flex-col gap-[11px] items-start justify-start shrink-0 w-[322px] relative">
+          <div className="flex flex-col items-center justify-center self-stretch shrink-0 relative">
+            <p className="text-white text-left font-medium text-[20px] self-stretch m-0">21 OKTOBER 2026</p>
+            <p className="text-white text-center font-bold text-[36px] self-stretch m-0">AUDIT K3</p>
+          </div>
+          <Match a={bracket.fa} b={bracket.fb} delay={1.14} className="w-full h-[187px]" />
+        </div>
+      </div>
 
       {/* Header */}
-      <div className="absolute left-0 top-0 w-[1278px] h-[100px] flex items-center justify-center">
-        <p className="text-white text-center font-bold text-[64px] m-0">PLAYOFFS BRACKET</p>
+      <div className="absolute left-0 top-0 w-[1920px] flex flex-row items-center justify-between">
+        <div className="bg-[#533920] flex flex-row items-center justify-center shrink-0 w-[1278px] h-[100px]">
+          <p className="text-white text-center font-bold text-[64px] m-0">PLAYOFFS BRACKET</p>
+        </div>
+        <div className="bg-[#d69345] flex flex-row items-center justify-center shrink-0 w-[642px] h-[100px]">
+          <p className="text-white text-center font-bold text-[64px] m-0">INTECHFEST</p>
+        </div>
       </div>
-      <div className="absolute w-[642px] h-[100px] bg-[#d69345]" style={{ left: 1278, top: 0 }} />
-      <div className="absolute w-[642px] h-[100px] flex items-center justify-center" style={{ left: 1278, top: 0 }}>
-        <p className="text-white text-center font-bold text-[64px] m-0">INTECHFEST</p>
-      </div>
-
-      <Schedule date="17 OKTOBER 2026" place="K3.B.317/318" className="left-[274px] top-[173px]" />
-      <Schedule date="17 OKTOBER 2026" place="K3.B.317/318" className="left-[799px] top-[277px]" />
-      <Schedule date="21 OKTOBER 2026" place="AUDIT K3" className="left-[1324px] top-[393px]" />
     </div>
   );
 }
