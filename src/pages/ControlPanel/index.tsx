@@ -294,7 +294,10 @@ export default function ControlPanel() {
       setMappingMsg(`\u2139\ufe0f Mapping ${team} \u2014 ${uid} sudah ada.`);
       return;
     }
-    const { error } = await supabase.from("team_mappings").insert({ team_name: team, uid });
+    const { error } = await supabase
+      .from("team_mappings")
+      // operator_id NOT NULL di DB -> otomatis 1 (baca tanpa filter operator_id).
+      .insert({ team_name: team, uid, operator_id: "1" });
     if (error) {
       setMappingMsg(`\u26a0\ufe0f Gagal menambah: ${error.message}`);
       return;
