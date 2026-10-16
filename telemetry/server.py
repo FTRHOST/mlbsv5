@@ -294,6 +294,46 @@ def _write_history_index() -> None:
         print(f"[History] [!] Gagal tulis index.json: {ex}")
 
 
+def insert_stats_row(match_data: dict, winner: int) -> bool:
+    """Otomatisasi skor series: insert 1 baris ke tabel Supabase `stats` saat win.
+
+    Baris = payload match + Battle.winCamp (format yang dibaca useMatchScore
+    & useHeroStats). Dedupe dijamin pemanggil (sekali per kemenangan).
+    Gagal insert tidak menggagalkan simpan file history.
+    """
+    import urllib.request
+    base = os.environ.get("VITE_SUPABASE_URL", "").strip().rstrip("/")
+    key = os.environ.get("VITE_SUPABASE_ANON_KEY", "").strip()
+    if not base or not key:
+        print("[Stats] [!] VITE_SUPABASE_URL/KEY kosong — skip insert stats.")
+        return False
+    try:
+        body = json.dumps({
+            "operator_id": os.environ.get("VITE_OPERATOR_ID", "").strip() or "1",
+            "timestamp": int(time.time() * 1000),
+            "data": match_data,
+        }).encode("utf-8")
+        req = urllib.request.Request(
+            f"{base}/rest/v1/stats",
+            data=body,
+            headers={
+                "apikey": key,
+                "Authorization": f"Bearer {key}",
+                "Content-Type": "application/json",
+                "Prefer": "return=minimal",
+            },
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            ok = 200 <= resp.status < 300
+        print(f"[Stats] {'✅' if ok else '[!]'} Insert baris stats "
+              f"(winCamp={winner}): HTTP {resp.status}")
+        return ok
+    except Exception as ex:
+        print(f"[Stats] [!] Gagal insert stats: {ex}")
+        return False
+
+
 def save_match_history(live_payload: dict, winner: int) -> str | None:
     """Simpan snapshot payload live + winner ke historyMatch. Kembalikan nama file."""
     global _history_saved_win
@@ -327,6 +367,15 @@ def save_match_history(live_payload: dict, winner: int) -> str | None:
             n += 1
         os.makedirs(HISTORY_DIR, exist_ok=True)
 
+        match_data = {
+            "gameState": inner.get("gameState"),
+            "draftPhase": inner.get("draftPhase"),
+            "draftTimer": inner.get("draftTimer"),
+            "mapDraw": inner.get("mapDraw"),
+            "players": players,
+            "Battle": battle,
+            "battle": battle,
+        }
         entry = {
             "savedAt": _wib_now_str(),
             "winnerCamp": winner,
@@ -334,19 +383,13 @@ def save_match_history(live_payload: dict, winner: int) -> str | None:
             "teamB": team_b,
             "blueTeam": blue_nm,
             "redTeam": red_nm,
-            "data": {
-                "gameState": inner.get("gameState"),
-                "draftPhase": inner.get("draftPhase"),
-                "draftTimer": inner.get("draftTimer"),
-                "mapDraw": inner.get("mapDraw"),
-                "players": players,
-                "Battle": battle,
-                "battle": battle,
-            },
+            "data": match_data,
         }
         with open(os.path.join(HISTORY_DIR, fname), "w", encoding="utf-8") as f:
             json.dump(entry, f, ensure_ascii=False)
         _write_history_index()
+        # Otomatisasi skor series di overlay (DraftPick/Win/Endmatch).
+        insert_stats_row(match_data, winner)
         _history_saved_win = winner
         print(f"[History] [WinLog] Team yang menang: {winner} (1:Blue, 2:Red) "
               f"-> tersimpan: historyMatch/{fname}")
@@ -399,6 +442,42 @@ def handle_match_result(winner: int) -> None:
         print("[History] [!] auto_match_result diterima tapi belum ada live payload.")
         return
     save_match_history(_history_last_live, w)
+
+
+HISTORY_PORT = 8081  # HTTP file historyMatch (0 = nonaktif)
+
+
+def start_history_http(port: int):
+    """HTTP server kecil untuk folder historyMatch (mode split-PC / LAN).
+
+    Overlay di PC lain fetch http://<ip-pc-telemetry>:port/index.json lalu
+    file terakhir. CORS terbuka + no-store agar data selalu fresh.
+    """
+    import http.server
+    import threading
+
+    class Handler(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *a, **kw):
+            super().__init__(*a, directory=HISTORY_DIR, **kw)
+
+        def end_headers(self):
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Cache-Control", "no-store")
+            super().end_headers()
+
+        def log_message(self, *a):
+            pass
+
+    try:
+        os.makedirs(HISTORY_DIR, exist_ok=True)
+        srv = http.server.ThreadingHTTPServer(("0.0.0.0", port), Handler)
+        t = threading.Thread(target=srv.serve_forever, daemon=True)
+        t.start()
+        print(f"[History] HTTP history di http://0.0.0.0:{port}/ (untuk PC overlay lain di LAN)")
+        return srv
+    except Exception as ex:
+        print(f"[History] [!] Gagal start HTTP history port {port}: {ex}")
+        return None
 
 
 async def broadcast(data):
@@ -558,6 +637,9 @@ async def main():
     else:
         print(f"[ℹ] Telemetry debug OFF. Aktifkan dengan: python3 server.py --debug")
 
+    if HISTORY_PORT:
+        start_history_http(HISTORY_PORT)
+
     # Jalankan Frida Worker di Background Thread
     loop.run_in_executor(None, frida_worker)
 
@@ -572,6 +654,8 @@ if __name__ == "__main__":
     _parser.add_argument("--debug", action="store_true", help="Aktifkan telemetry debug mode (catat semua payload, deteksi duplikat/tidak sesuai)")
     _parser.add_argument("--debug-log", default=None, help="Path file JSONL untuk debug log (default: telemetry_payload_debug.jsonl)")
     _parser.add_argument("--port", type=int, default=PORT, help="WebSocket port")
+    _parser.add_argument("--history-port", type=int, default=HISTORY_PORT,
+                         help="Port HTTP historyMatch untuk PC overlay lain (0 = nonaktif)")
     _args = _parser.parse_args()
     if _args.debug:
         DEBUG = True
@@ -580,6 +664,7 @@ if __name__ == "__main__":
         DEBUG_LOG_FILE = _args.debug_log
     if _args.port:
         PORT = _args.port
+    HISTORY_PORT = int(_args.history_port or 0)
     _load_root_env()  # butuh VITE_SUPABASE_* untuk nama tim historyMatch
     os.makedirs(HISTORY_DIR, exist_ok=True)
     print(f"[History] 📁 Folder history: public/historyMatch/ (dibaca Endmatch)")

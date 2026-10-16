@@ -109,6 +109,36 @@ npm run wait-and-hook
 
 ---
 
+## 💾 History & Skor Otomatis (saat win)
+
+Saat `[Match] [WinLog]` terpanggil (`auto_match_result`), `server.py` otomatis:
+1. Menyimpan `public/historyMatch/[hh-mm_timA-timB].json` + `index.json` (dibaca Endmatch).
+2. Insert 1 baris ke tabel Supabase `stats` (payload + `Battle.winCamp`) sehingga
+   skor series di DraftPick/Win/Endmatch naik sendiri tanpa input dashboard.
+
+## 🖧️ Mode Split-PC (telemetry & overlay beda komputer satu LAN)
+
+```
+[Android] --usb--> [PC Telemetry: frida + server.py :8080 WS + :8081 HTTP]
+                        |
+                  LAN (WiFi/Kabel)
+                        |
+              [PC Overlay/OBS: npm run dev + browser source]
+```
+
+1. **PC Telemetry**: `adb` + `python3 server.py` (bind `0.0.0.0`; izinkan firewall port `8080` & `8081`).
+2. **PC Overlay**: isi `.env` dengan IP PC telemetry, lalu `npm run dev`:
+   ```env
+   VITE_LOCAL_WS_URL=ws://192.168.1.10:8080
+   VITE_HISTORY_BASE_URL=http://192.168.1.10:8081/historyMatch
+   ```
+   OBS Browser Source & `/control` dibuka di PC overlay (trigger test antar-tab
+   via BroadcastChannel hanya berlaku dalam browser yang sama; kontrol berbasis
+   Supabase — overlay, player stats, caster, bracket, team mapping — tetap sinkron lintas PC).
+3. `scripts/auto_scene_switch.py` bisa jalan di PC mana pun (atur `TELEMETRY_WS_URL`).
+
+---
+
 ## 🤖 AI Skill Context
 
 Proyek ini dilengkapi dengan AI Skill di `.opencode/skills/il2cpp-stealth/SKILL.md`. AI assistant dapat memuat skill ini untuk membantu pengembangan fitur hook baru atau pemeliharaan arsitektur stealth secara otomatis.

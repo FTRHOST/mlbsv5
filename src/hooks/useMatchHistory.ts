@@ -33,7 +33,12 @@ export function useLastMatchHistory(pollMs: number = 5000): {
 
     async function load() {
       try {
-        const base = `${import.meta.env.BASE_URL}historyMatch/`;
+        // Mode split-PC: arahkan ke HTTP history di PC telemetry,
+        // mis. VITE_HISTORY_BASE_URL=http://192.168.1.10:8081/historyMatch
+        const envBase = (import.meta.env.VITE_HISTORY_BASE_URL as string | undefined) || "";
+        const base = envBase
+          ? (envBase.endsWith("/") ? envBase : `${envBase}/`)
+          : `${import.meta.env.BASE_URL}historyMatch/`;
         const idxRes = await fetch(`${base}index.json`, { cache: 'no-store' });
         if (!idxRes.ok) return;
         const files = await idxRes.json();

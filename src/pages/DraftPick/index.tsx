@@ -104,7 +104,7 @@ function CoachInfo() {
         </svg>
       </div>
       <div className="[word-break:break-word] col-1 flex flex-col font-['Inter:Bold',sans-serif] font-bold h-[65px] justify-center ml-[9px] mt-[0.88px] not-italic relative row-1 text-[#533920] text-[24px] w-[223px]">
-        <p className="leading-[0px]">NAMA</p>
+        <p className="leading-[0px]">N</p>
       </div>
     </div>
   );
@@ -591,7 +591,7 @@ function CoachInfo1() {
         </div>
       </div>
       <div className="[word-break:break-word] col-1 flex flex-col font-['Inter:Bold',sans-serif] font-bold h-[65px] justify-center ml-[77px] mt-0 not-italic relative row-1 text-[#533920] text-[24px] text-right w-[223px]">
-        <p className="leading-[0px]">NAMA</p>
+        <p className="leading-[0px]">N</p>
       </div>
     </div>
   );
