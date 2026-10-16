@@ -1,28 +1,41 @@
 import { motion } from "motion/react";
 import { useWinnerOverride } from "../../hooks/useBracketControl";
+import { useLastMatchHistory } from "../../hooks/useMatchHistory";
 import { useDisplayTeamNames } from "../../hooks/useTeamNames";
 import { useMatchScore } from "../../hooks/useMatchScore";
 import { useRoomData } from "../../hooks/useRoomData";
 
 export default function Win() {
-  const roomData = useRoomData();
+  const liveRoomData = useRoomData();
+  // Nama tim saat win/victory diambil dari index TERAKHIR historyMatch
+  // (frozen, selalu terisi) — live payload sering sudah kosong/reset
+  // tepat di momen match selesai. Fallback ke live bila belum ada history.
+  const { entry: historyEntry } = useLastMatchHistory();
+  const roomData = historyEntry?.data ?? liveRoomData;
   const teamNames = useDisplayTeamNames();
-  const matchScore = useMatchScore(
-    teamNames.blue ?? undefined,
-    teamNames.red ?? undefined,
-  );
+  const blueName =
+    historyEntry?.blueTeam ||
+    teamNames.blue ||
+    roomData?.blue_team_name ||
+    "";
+  const redName =
+    historyEntry?.redTeam ||
+    teamNames.red ||
+    roomData?.red_team_name ||
+    "";
+  const matchScore = useMatchScore(blueName || undefined, redName || undefined);
 
   const battle = roomData?.battle ?? roomData?.Battle ?? {};
   const winCamp = Number(battle.winCamp);
   const autoWinner =
     matchScore.blueScore !== matchScore.redScore
       ? matchScore.blueScore > matchScore.redScore
-        ? teamNames.blue || ""
-        : teamNames.red || ""
+        ? blueName
+        : redName
       : winCamp === 1
-        ? teamNames.blue || ""
+        ? blueName
         : winCamp === 2
-          ? teamNames.red || ""
+          ? redName
           : "";
 
   const { winner } = useWinnerOverride(autoWinner || "NAMA TEAM");
