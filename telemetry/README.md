@@ -119,23 +119,62 @@ Saat `[Match] [WinLog]` terpanggil (`auto_match_result`), `server.py` otomatis:
 ## 🖧️ Mode Split-PC (telemetry & overlay beda komputer satu LAN)
 
 ```
-[Android] --usb--> [PC Telemetry: frida + server.py :8080 WS + :8081 HTTP]
+[Android] --usb--> [PC Telemetry: adb + frida + server.py :8080 WS + :8081 HTTP]
+                        |   (Supabase cloud dipakai bersama kedua PC)
+                   LAN (WiFi/Kabel, sebaiknya satu subnet)
                         |
-                  LAN (WiFi/Kabel)
-                        |
-              [PC Overlay/OBS: npm run dev + browser source]
+              [PC Overlay/OBS: npm run dev + OBS browser source]
 ```
 
-1. **PC Telemetry**: `adb` + `python3 server.py` (bind `0.0.0.0`; izinkan firewall port `8080` & `8081`).
-2. **PC Overlay**: isi `.env` dengan IP PC telemetry, lalu `npm run dev`:
-   ```env
-   VITE_LOCAL_WS_URL=ws://192.168.1.10:8080
-   VITE_HISTORY_BASE_URL=http://192.168.1.10:8081/historyMatch
-   ```
-   OBS Browser Source & `/control` dibuka di PC overlay (trigger test antar-tab
-   via BroadcastChannel hanya berlaku dalam browser yang sama; kontrol berbasis
-   Supabase — overlay, player stats, caster, bracket, team mapping — tetap sinkron lintas PC).
-3. `scripts/auto_scene_switch.py` bisa jalan di PC mana pun (atur `TELEMETRY_WS_URL`).
+Prinsip pembagian `.env` (bukan "OBS di telemetry, cukup WS-URL di overlay"):
+
+| Kebutuhan | PC Telemetry (pengirim) | PC Overlay/OBS |
+|---|---|---|
+| `server.py` | `VITE_SUPABASE_URL/KEY` (+ `VITE_OPERATOR_ID`) untuk insert `stats` & nama tim history | tidak jalan di sini |
+| Overlay web | tidak jalan di sini | `VITE_SUPABASE_URL/KEY` **tetap wajib** (frontend query Supabase langsung!) + `VITE_LOCAL_WS_URL=ws://<ip-telemetry>:8080` + `VITE_HISTORY_BASE_URL=http://<ip-telemetry>:8081/historyMatch` |
+| `auto_scene_switch.py` | hanya bila script dijalankan di sini | `OBS_WS_HOST/PORT/PASSWORD` (OBS lokal) + `TELEMETRY_WS_URL=ws://<ip-telemetry>:8080` |
+
+`server.py` tidak membaca `OBS_WS_*` sama sekali — variabel itu hanya dipakai
+`auto_scene_switch.py`. Yang lewat WS telemetry hanya live payload (players,
+battle, kill/boss event); nama tim, skor series, dan semua kontrol tetap
+diambil frontend langsung dari Supabase.
+
+### Langkah setup
+
+**PC Telemetry** (cukup `.env` Supabase):
+1. Colok Android via USB, pastikan `adb devices` terlihat.
+2. `python3 server.py` (bind `0.0.0.0` otomatis).
+3. Firewall: izinkan inbound TCP `8080` (WS) dan `8081` (HTTP history).
+4. Catat IP LAN PC ini (`ipconfig` / `ip a`), mis. `192.168.1.10`.
+
+**PC Overlay/OBS**:
+1. Isi `.env`: kredensial Supabase + dua URL ke IP PC telemetry (lihat tabel).
+2. `npm run dev` (tambah `-- --host` bila `/control` dibuka dari HP/perangkat lain).
+3. OBS Browser Source ke `http://localhost:5173/inmatch` (atau route lain);
+   halaman `/control` dibuka di browser PC ini.
+4. Opsional: jalankan `python scripts/auto_scene_switch.py` di PC ini
+   (`OBS_WS_HOST=localhost`, `TELEMETRY_WS_URL` ke PC telemetry). Aktifkan
+   dulu WebSocket Server di OBS (Tools -> WebSocket Server Settings) dan
+   samakan password dengan `.env`; nama scene harus persis seperti mapping
+   (`mapdraw`, `draft-loading`, `match`, `victory`, `end-match`).
+
+### Yang jalan lintas PC vs yang tidak
+
+- ✅ Lintas PC: live data, kill/boss notif, history Endmatch, skor series,
+  dan semua kontrol berbasis Supabase (overlay bawah, player stats, caster,
+  bracket, sesaat-lagi, win, team mapping).
+- ⚠️ Hanya dalam browser yang sama (BroadcastChannel): tombol test di
+  `/control` (simulasi infokill/level-up/turtle/lord/mapdraw/live). Untuk
+  pemakaian split, trigger test tidak dikirim ke PC lain — normal dan bukan bug.
+
+### Troubleshooting
+
+- Overlay `Connecting...` terus: cek IP telemetry, firewall 8080, dan
+  `VITE_LOCAL_WS_URL` (restart `npm run dev` tiap ganti `.env`).
+- Endmatch kosong/fallback live: cek `http://<ip-telemetry>:8081/index.json`
+  dari browser PC overlay (pastikan `VITE_HISTORY_BASE_URL` benar).
+- Scene OBS tidak pindah: `--dry-run` dulu untuk tes logika; cek nama scene
+  (case-sensitive) dan password WS OBS.
 
 ---
 
