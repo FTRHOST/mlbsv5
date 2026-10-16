@@ -3862,7 +3862,7 @@ function BlueTeamScore1() {
       <div className="-scale-y-100 flex-none rotate-180">
         <div
           className="h-[39px] relative w-[126.298px]"
-          data-name="Blue Team Score"
+          data-name="Red Team Score"
         >
           <div className="absolute inset-[0_-31.44%_0_-3.17%]">
             <svg
@@ -3871,7 +3871,7 @@ function BlueTeamScore1() {
               preserveAspectRatio="none"
               viewBox="0 0 170 39"
             >
-              <g filter="url(#filter0_d_1_1078)" id="Blue Team Score">
+              <g filter="url(#filter0_d_1_1078)" id="Red Team Score">
                 {Array.from({ length: scoreData.requiredWins }).map((_, i) => (
                   <path
                     key={i}
