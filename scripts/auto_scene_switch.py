@@ -6,6 +6,7 @@ Kontrol OBS : OBS WebSocket v5 (OBS >= 28, Tools -> WebSocket Server Settings).
 
 Mapping (sesuai permintaan):
     gameState 3 -> scene "mapdraw"       + transisi "Stinger"
+                   + follow-up otomatis 5 detik kemudian -> "draft-pick" + "Stinger"
     gameState 5 -> scene "draft-loading"  + transisi "Stinger"
     gameState 6 -> scene "match"          + transisi "Stinger"
     gameState 7 -> scene "victory"        + transisi "Move" (fallback "Stinger" bila belum ada)
@@ -51,6 +52,13 @@ SCENE_MAP: dict[int, tuple[str, str]] = {
     7: ("victory", "Move"),
     8: ("end-match", "Stinger"),
 }
+
+# Follow-up otomatis: setelah BERHASIL masuk scene "mapdraw" (gameState 3),
+# 5 detik kemudian pindah ke scene "draft-pick" dengan transisi "Stinger".
+# Dibatalkan otomatis bila ada gameState baru sebelum delay habis.
+MAPDRAW_FOLLOWUP_SCENE = "draft-pick"
+MAPDRAW_FOLLOWUP_TRANSITION = "Stinger"
+MAPDRAW_FOLLOWUP_DELAY = 5.0
 
 FALLBACK_TRANSITION = "Stinger"  # dipakai bila transisi mapping tidak ada di OBS.
 
@@ -264,7 +272,7 @@ class ObsClient:
                 return resp.get("d", {})
             # Pesan lain (mis. RequestBatchResponse) -> tunggu yang cocok.
 
-    async def validate_setup(self) -> None:
+    async def validate_setup(self, extra_scenes: list[str] | None = None) -> None:
         """Log peringatan bila scene/transisi mapping belum ada di OBS."""
         try:
             scenes = await self.request("GetSceneList")
@@ -273,6 +281,9 @@ class ObsClient:
             for gs, (scene, _tr) in sorted(SCENE_MAP.items()):
                 if scene not in names:
                     LOG.warning("gameState %d -> scene '%s' TIDAK ADA di OBS!", gs, scene)
+            for extra in extra_scenes or []:
+                if extra not in names:
+                    LOG.warning("Follow-up scene '%s' TIDAK ADA di OBS!", extra)
         except Exception as e:
             LOG.warning("Gagal membaca daftar scene OBS: %s", e)
         try:
@@ -344,6 +355,13 @@ async def telemetry_loop(url: str, on_state) -> None:
 
 async def amain(args: argparse.Namespace) -> int:
     obs = ObsClient(args.obs_host, args.obs_port, args.obs_password)
+    followup_enabled = not getattr(args, "no_mapdraw_followup", False)
+    followup_scene = getattr(args, "mapdraw_followup_scene", None) or MAPDRAW_FOLLOWUP_SCENE
+    followup_transition = MAPDRAW_FOLLOWUP_TRANSITION
+    try:
+        followup_delay = float(getattr(args, "mapdraw_delay", MAPDRAW_FOLLOWUP_DELAY))
+    except (TypeError, ValueError):
+        followup_delay = MAPDRAW_FOLLOWUP_DELAY
     if not args.dry_run:
         try:
             await obs.connect()
@@ -351,31 +369,68 @@ async def amain(args: argparse.Namespace) -> int:
             LOG.error("Tidak bisa terhubung ke OBS (%s). "
                       "Pastikan OBS terbuka + WebSocket Server aktif + password benar.", e)
             return 1
-        await obs.validate_setup()
+        await obs.validate_setup(extra_scenes=[followup_scene] if followup_enabled else None)
     else:
         LOG.info("[DRY-RUN] Melewati koneksi OBS.")
 
     last_state: int | None = None
     last_switch = 0.0
+    delayed_task: asyncio.Task | None = None  # follow-up mapdraw->draft-pick; dibatalkan bila ada state baru
+
+    def _cancel_delayed(reason: str = "") -> None:
+        nonlocal delayed_task
+        if delayed_task and not delayed_task.done():
+            delayed_task.cancel()
+            LOG.debug("Follow-up '%s' dibatalkan%s.", followup_scene,
+                      f" ({reason})" if reason else "")
 
     async def on_state(gs: int) -> None:
-        nonlocal last_state, last_switch
+        nonlocal last_state, last_switch, delayed_task
         if gs == last_state:
             return  # hanya saat BERUBAH
         last_state = gs
+
+        # Ada gameState baru -> batalkan follow-up yang belum sempat jalan.
+        _cancel_delayed(f"ada gameState {gs} baru")
+
         mapping = SCENE_MAP.get(gs)
         if mapping is None:
             LOG.debug("gameState %d berubah (tidak ada mapping, diabaikan).", gs)
             return
+
         scene, transition = mapping
         now = asyncio.get_event_loop().time()
         if now - last_switch < args.min_interval:
-            LOG.debug("Debounce: abaikan gameState %d (%.1fs sejak switch terakhir).",
-                      gs, now - last_switch)
+            LOG.debug("Debounce: abaikan gameState %d (%.1fs sejak switch terakhir).", gs, now - last_switch)
             return
-        last_switch = now
+
         try:
-            await obs.switch_scene(scene, transition, dry_run=args.dry_run)
+            ok = await obs.switch_scene(scene, transition, dry_run=args.dry_run)
+            if not ok:
+                return  # GAGAL -> jangan update last_switch & jangan jadwalkan follow-up
+            last_switch = asyncio.get_event_loop().time()
+
+            # Setelah BERHASIL masuk mapdraw (gameState 3), 5 detik kemudian
+            # pindah ke "draft-pick" dengan transisi "Stinger".
+            if gs == 3 and followup_enabled:
+                async def delayed_switch() -> None:
+                    try:
+                        await asyncio.sleep(followup_delay)
+                        LOG.info("%.0f detik berlalu, otomatis pindah dari '%s' ke '%s'.",
+                                 followup_delay, scene, followup_scene)
+                        await obs.switch_scene(followup_scene, followup_transition,
+                                               dry_run=args.dry_run)
+                    except asyncio.CancelledError:
+                        LOG.debug("Follow-up ke '%s' dibatalkan (ada gameState baru).",
+                                  followup_scene)
+                        raise
+                    except Exception as e:
+                        LOG.error("Follow-up ke '%s' gagal: %s", followup_scene, e)
+
+                delayed_task = asyncio.create_task(delayed_switch())
+                LOG.info("Masuk '%s', jadwalkan '%s' dalam %.0f detik (transisi '%s').",
+                         scene, followup_scene, followup_delay, followup_transition)
+
         except Exception as e:
             LOG.error("Switch scene gagal: %s", e)
 
@@ -384,6 +439,7 @@ async def amain(args: argparse.Namespace) -> int:
     except KeyboardInterrupt:
         pass
     finally:
+        _cancel_delayed("shutdown")
         await obs.close()
     return 0
 
@@ -401,6 +457,12 @@ def build_parser() -> argparse.ArgumentParser:
                    help="Hanya log tanpa benar-benar memindah scene OBS.")
     p.add_argument("--min-interval", type=float, default=1.5,
                    help="Jeda minimum antar switch scene dalam detik (default: 1.5).")
+    p.add_argument("--mapdraw-delay", type=float, default=float(os.environ.get("MAPDRAW_DELAY", "5.0")),
+                   help="Delay follow-up mapdraw -> draft-pick dalam detik (default: 5.0).")
+    p.add_argument("--mapdraw-followup-scene", default=os.environ.get("MAPDRAW_FOLLOWUP_SCENE", "draft-pick"),
+                   help="Scene follow-up setelah mapdraw (default: draft-pick).")
+    p.add_argument("--no-mapdraw-followup", action="store_true",
+                   help="Nonaktifkan follow-up otomatis mapdraw -> draft-pick.")
     p.add_argument("--env-file", default=None,
                    help="Path file .env (default: <repo>/.env).")
     p.add_argument("-v", "--verbose", action="store_true")
