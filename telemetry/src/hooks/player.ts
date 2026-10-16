@@ -7,7 +7,7 @@ import {
   readCsharpString,
 } from "../core/api.js";
 import type { KillParticipant } from "../types/kill.js";
-import { getDeathSpanMs, refreshDeathSpans } from "./death.js";
+import { getDeathSpanMs, logDeathAnomaly, MAX_DEATH_SECONDS, refreshDeathSpans } from "./death.js";
 import { playerBanMap } from "./draft.js";
 import { getMatchTimeMs } from "./match.js";
 import { lockedPickMap, pickPhaseMap } from "./pick.js";
@@ -1332,6 +1332,8 @@ export function extractPlayerData(
                     targetPlayer.level = logicPlayerPtr.add(offLvl).readInt();
                   // deathTime = sisa respawn (detik). Timestamp kematian +
                   // total durasi Show-side - jam match. Hidup / tak diketahui = 0.
+                  // Pasca-patch game: satuan/offset bisa berubah (pernah tampil
+                  // 1081391) -> clamp ke rentang wajar + log kalibrasi throttled.
                   targetPlayer.deathTime = 0;
                   try {
                     if (offDead > 0 && offGuid > 0) {
@@ -1352,9 +1354,17 @@ export function extractPlayerData(
                             const remainMs =
                               deadStamp + spanMs - (nowMs as number);
                             if (remainMs > 0) {
-                              targetPlayer.deathTime = Math.floor(
-                                remainMs / 1000,
-                              );
+                              const remainSec = Math.floor(remainMs / 1000);
+                              if (remainSec <= MAX_DEATH_SECONDS) {
+                                targetPlayer.deathTime = remainSec;
+                              } else {
+                                logDeathAnomaly(
+                                  guid,
+                                  deadStamp,
+                                  spanMs,
+                                  nowMs as number,
+                                );
+                              }
                             }
                           }
                         }

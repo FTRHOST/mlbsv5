@@ -143,6 +143,9 @@ function validatePayload(type: string, obj: any): string[] {
         if (typeof pl.level === "number" && (pl.level < 0 || pl.level > 30)) {
           warnings.push(`level tidak wajar: ${pl.level} ipos=${pl.ipos}`);
         }
+        if (typeof pl.deathTime === "number" && (pl.deathTime < 0 || pl.deathTime > 120)) {
+          warnings.push(`deathTime tidak wajar: ${pl.deathTime}s ipos=${pl.ipos} (offset/satuan pasca-patch?)`);
+        }
       }
       seenHeroByTeam.forEach((slots, key) => {
         if (slots.length > 1) {

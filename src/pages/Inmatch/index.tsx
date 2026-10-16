@@ -1903,7 +1903,10 @@ function SingleBluePlayerSideCard({ ipos }: { ipos: number }) {
   const role = Number(player?.role) || 0;
   const levelUp = useLevelUpNotif({ ipos, level, roomData });
   const showSideItem = useSideItemVisible();
-  const deathTime = Number(player?.deathTime) || 0;
+  const rawDeathTime = Number(player?.deathTime) || 0;
+  // Sabuk pengaman overlay: timer respawn wajar maks 120 dtk. Nilai di luar
+  // itu = sampah pasca-patch -> anggap hidup agar tak tampil 1081391.
+  const deathTime = rawDeathTime > 0 && rawDeathTime <= 120 ? rawDeathTime : 0;
   const isDead = deathTime !== 0;
 
   const validEquips = Array.isArray(player?.equips)
@@ -3291,7 +3294,10 @@ function SingleRedPlayerSideCard({ ipos }: { ipos: number }) {
   const role = Number(player?.role) || 0;
   const levelUp = useLevelUpNotif({ ipos, level, roomData });
   const showSideItem = useSideItemVisible();
-  const deathTime = Number(player?.deathTime) || 0;
+  const rawDeathTime = Number(player?.deathTime) || 0;
+  // Sabuk pengaman overlay: timer respawn wajar maks 120 dtk. Nilai di luar
+  // itu = sampah pasca-patch -> anggap hidup agar tak tampil 1081391.
+  const deathTime = rawDeathTime > 0 && rawDeathTime <= 120 ? rawDeathTime : 0;
   const isDead = deathTime !== 0;
 
   const validEquips = Array.isArray(player?.equips)
@@ -3862,7 +3868,7 @@ function BlueTeamScore1() {
       <div className="-scale-y-100 flex-none rotate-180">
         <div
           className="h-[39px] relative w-[126.298px]"
-          data-name="Red Team Score"
+          data-name="Blue Team Score"
         >
           <div className="absolute inset-[0_-31.44%_0_-3.17%]">
             <svg
@@ -3871,7 +3877,7 @@ function BlueTeamScore1() {
               preserveAspectRatio="none"
               viewBox="0 0 170 39"
             >
-              <g filter="url(#filter0_d_1_1078)" id="Red Team Score">
+              <g filter="url(#filter0_d_1_1078)" id="Blue Team Score">
                 {Array.from({ length: scoreData.requiredWins }).map((_, i) => (
                   <path
                     key={i}

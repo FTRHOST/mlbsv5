@@ -86,11 +86,16 @@ export function refreshDeathSpans(): void {
           const kSe = il2cppApi.object_get_class(se);
           if (kSe && !kSe.isNull()) {
             if (offShowGuid <= 0) offShowGuid = getOffset(kSe, "m_uGuid");
+            if (offShowGuid <= 0) offShowGuid = 0x198; // ShowEntity (dump terbaru)
+            // "m_uDeadSpanTime" adalah PROPERTY (getter/setter), bukan field:
+            // class_get_field_from_name tidak akan menemukannya. Yang benar
+            // backing field "<m_uDeadSpanTime>k__BackingField" (= 0x24c di
+            // ShowEntity, dump terbaru). Fallback lama 0x23c USANG dan membaca
+            // sampah -> deathTime meledak (kasus tampil 1081391).
             if (offShowSpan <= 0) offShowSpan = getOffset(kSe, "m_uDeadSpanTime");
-            // Nama field tak ada di metadata build live (terbukti di
-            // ShowSelfPlayer/ShowPlayer) tapi nilai di offset dump 0x23c
-            // terkalibrasi benar (timestamp 0x238 cocok sisi logic).
-            if (offShowSpan <= 0) offShowSpan = 0x23c;
+            if (offShowSpan <= 0)
+              offShowSpan = getOffset(kSe, "<m_uDeadSpanTime>k__BackingField");
+            if (offShowSpan <= 0) offShowSpan = 0x24c;
             if (offShowGuid > 0 && offShowSpan > 0) isDeathOffsetsResolved = true;
           }
         }
@@ -103,8 +108,47 @@ export function refreshDeathSpans(): void {
   } catch (e) {}
 }
 
-// Total durasi respawn (ms) untuk guid logic; 0 bila tak diketahui.
+// Batas wajar sisa respawn (detik). MLBB maks ~60-70 detik; margin 120.
+// Nilai di luar ini = satuan/offset usang pasca-patch -> buang (0) + log.
+export const MAX_DEATH_SECONDS = 120;
+
+let lastDeathWarnAt = 0;
+const DEATH_WARN_THROTTLE_MS = 15000;
+
+// Log kalibrasi throttled: deadStamp/spanMs/nowMs mentah agar offset atau
+// satuan baru pasca-patch bisa dibaca dari log tanpa spam per tick.
+export function logDeathAnomaly(
+  guid: number,
+  deadStamp: number,
+  spanMs: number,
+  nowMs: number,
+): void {
+  try {
+    const now = Date.now();
+    if (now - lastDeathWarnAt < DEATH_WARN_THROTTLE_MS) return;
+    lastDeathWarnAt = now;
+    debugLog(
+      "Death",
+      `⚠️ deathTime tak wajar dibuang (guid=${guid}): ` +
+        `deadStamp=${deadStamp} spanMs=${spanMs} nowMs=${nowMs} ` +
+        `(m_uDeadTime/span/jam-match perlu kalibrasi ulang pasca-patch)`,
+    );
+  } catch (e) {}
+}
+
+// Total durasi respawn (ms) untuk guid logic; 0 bila tak diketahui / tak wajar.
+// Rentang wajar: 0 < span <= 5 menit. Di luar itu dianggap sampah memori
+// (offset usang pasca-patch, mis. fallback 0x23c menunjuk field lain)
+// dan diabaikan agar deathTime tidak meledak (kasus tampil 1081391).
+const MAX_SPAN_MS = 5 * 60 * 1000;
+
+export function isDeathSpanSane(spanMs: number): boolean {
+  return spanMs > 0 && spanMs <= MAX_SPAN_MS;
+}
+
+// Total durasi respawn (ms) untuk guid logic; 0 bila tak diketahui / tak wajar.
 export function getDeathSpanMs(logicGuid: number): number {
   if (logicGuid <= 0) return 0;
-  return spanByGuid.get(logicGuid) ?? 0;
+  const span = spanByGuid.get(logicGuid) ?? 0;
+  return isDeathSpanSane(span) ? span : 0;
 }

@@ -42,31 +42,17 @@ export function useMatchScore(blueTeamName?: string, redTeamName?: string) {
         const uid1 = teamToUid[team1];
         const uid2 = teamToUid[team2];
         
-        // 3. Fetch stats (tanpa filter operator_id), urut terbaru dulu.
+        // 3. Fetch stats (tanpa filter operator_id)
         const { data: statsData } = await supabase
           .from('stats')
-          .select('*')
-          .order('timestamp', { ascending: false });
-
+          .select('*');
+          
         if (!statsData) return;
-
-        // Skor = series BERJALAN, bukan total sepanjang masa: jalan dari
-        // baris terbaru mundur, berhenti saat satu tim mencapai mayoritas
-        // (first-to). Baris lebih tua = series sebelumnya, diabaikan agar
-        // kotak skor (BO3) tidak macet penuh.
-        const need = Math.floor((bestOf || 3) / 2) + 1;
-        const rowTime = (st: any): number => {
-          const t = Number(st?.timestamp);
-          if (Number.isFinite(t) && t > 0) return t;
-          const s = Date.parse(st?.saved_at);
-          return Number.isFinite(s) ? s : 0;
-        };
-        const ordered = [...statsData].sort((a, b) => rowTime(b) - rowTime(a));
-
+        
         let team1Wins = 0;
         let team2Wins = 0;
-
-        for (const stat of ordered) {
+        
+        statsData.forEach((stat: any) => {
           try {
             const data = typeof stat.data === 'string' ? JSON.parse(stat.data) : stat.data;
             const players = data.players || [];
@@ -85,12 +71,9 @@ export function useMatchScore(blueTeamName?: string, redTeamName?: string) {
             if (t1Camp > 0 && t2Camp > 0) {
                if (winCamp === t1Camp) team1Wins++;
                else if (winCamp === t2Camp) team2Wins++;
-               // Series selesai (salah satu capai mayoritas): stop,
-               // sisa baris = series lama.
-               if (team1Wins >= need || team2Wins >= need) break;
             }
           } catch (e) {}
-        }
+        });
         
         let finalBlue = 0;
         let finalRed = 0;
