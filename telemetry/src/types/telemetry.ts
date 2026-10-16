@@ -1,3 +1,4 @@
+import type { BossEvent } from "./boss.js";
 import type { KillEvent } from "./kill.js";
 import type { BattleData } from "./match.js";
 import type { PlayerData } from "./player.js";
@@ -14,4 +15,5 @@ export interface TelemetryPayload {
 export type TelemetryEvent =
   | { type: "mlbb_live_data"; payload: TelemetryPayload }
   | { type: "auto_match_result"; winnerCamp: number }
-  | { type: "mlbb_kill_event"; event: KillEvent };
+  | { type: "mlbb_kill_event"; event: KillEvent }
+  | { type: "mlbb_boss_event"; event: BossEvent };

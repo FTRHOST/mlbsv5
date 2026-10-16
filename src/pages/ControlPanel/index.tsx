@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { sendLocalLiveData, sendKillEvent } from "../../hooks/useLocalLiveData";
-import { parseMlbbLiveData, parseMlbbKillEvent, getKillEventLabel } from "../../hooks/useRoomData";
+import { parseMlbbLiveData, parseMlbbKillEvent, getKillEventLabel, supabase } from "../../hooks/useRoomData";
 import { BracketControls, SesaatLagiControls, WinControls } from "../../components/RemoteBracketControls";
 import {
   fetchOverlayRow,
@@ -69,6 +69,11 @@ export default function ControlPanel() {
   // Status tulis ke Supabase untuk kontrol overlay (bagian 1 & 7).
   const [overlayDb, setOverlayDb] = useState<string | null>(null);
   const [casterName, setCasterName] = useState<string>("");
+  // Team Mapping: uid perwakilan per nama team (tabel team_mappings).
+  const [mappings, setMappings] = useState<{ team_name: string; uid: string }[]>([]);
+  const [mappingTeam, setMappingTeam] = useState<string>("");
+  const [mappingUid, setMappingUid] = useState<string>("");
+  const [mappingMsg, setMappingMsg] = useState<string | null>(null);
 
   const [rawPayloadInput, setRawPayloadInput] = useState<string>(
     `message: {'type': 'send', 'payload': '{"type":"mlbb_live_data","payload":{"gameState":0,"draftPhase":"PREPARATION","draftTimer":0,"players":[{"ipos":0,"id":"2178663653","name":"petwir-kepo","role":5,"team":2,"heroid":18,"uiHeroIDChoose":0,"battleSpell":20050,"emblem":0,"emblemSkills":[],"pickPhase":false,"banPhase":false,"SelHeroID":18,"banHero":0,"hp":3070,"maxHp":3070,"level":6,"deathTime":0,"kill":2,"dead":2,"assist":0,"ultActive":false,"equips":[2305,1001,2003,1004,0,0],"totalGold":2284,"damageDealt":16442,"damageTaken":7412},{"ipos":0,"id":"2231735373","name":"Tony Mark*66","role":3,"team":1,"heroid":10,"uiHeroIDChoose":0,"battleSpell":20050,"emblem":0,"emblemSkills":[],"pickPhase":false,"banPhase":false,"SelHeroID":10,"banHero":0,"hp":3440,"maxHp":3440,"level":4,"deathTime":0,"kill":1,"dead":2,"assist":0,"ultActive":false,"equips":[3562,1202,1203,0,0,0],"totalGold":1492,"damageDealt":7046,"damageTaken":9248}],"Battle":{"battleState":0,"winCamp":0,"waktuPertandingan":269,"blueTeamKill":1,"redTeamKill":2,"blueTeamGold":1492,"redTeamGold":2284,"blueTeamKillLord":0,"redTeamKillLord":0,"blueTeamDestroyTuret":0,"redTeamDestroyTuret":0}}}'} data: None`
@@ -143,6 +148,30 @@ export default function ControlPanel() {
     return () => {
       bc.close();
     };
+  }, []);
+
+  // Team Mapping: muat daftar + realtime subscribe agar sinkron antar operator.
+  useEffect(() => {
+    void fetchMappings();
+    if (!supabase) return;
+    const ch = supabase
+      .channel("team-mappings-control")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "team_mappings" },
+        () => {
+          void fetchMappings();
+        },
+      )
+      .subscribe();
+    return () => {
+      try {
+        supabase.removeChannel(ch);
+      } catch {
+        /* noop */
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const sendControl = (mode: "none" | "emblem" | "item") => {
@@ -227,6 +256,68 @@ export default function ControlPanel() {
     void writeOverlayRow({ player_stats_visible: visible, player_stats_metric: metric }).then((err) => {
       setOverlayDb(err ? overlayDbError(err) : "✅ Tersimpan di database Supabase.");
     });
+  };
+
+  const fetchMappings = async () => {
+    if (!supabase) {
+      setMappingMsg("\u26a0\ufe0f Supabase belum dikonfigurasi (VITE_SUPABASE_URL/KEY).");
+      return;
+    }
+    const { data, error } = await supabase
+      .from("team_mappings")
+      .select("team_name,uid")
+      .order("team_name", { ascending: true });
+    if (error) {
+      setMappingMsg(`\u26a0\ufe0f Gagal memuat mapping: ${error.message}`);
+      return;
+    }
+    setMappings(
+      (data || []).map((r: any) => ({
+        team_name: String(r.team_name ?? ""),
+        uid: String(r.uid ?? "").trim(),
+      })),
+    );
+  };
+
+  const addMapping = async () => {
+    const team = mappingTeam.trim();
+    const uid = mappingUid.trim();
+    if (!team || !uid) {
+      setMappingMsg("\u26a0\ufe0f Nama team & UID perwakilan wajib diisi.");
+      return;
+    }
+    if (!supabase) {
+      setMappingMsg("\u26a0\ufe0f Supabase belum dikonfigurasi.");
+      return;
+    }
+    if (mappings.some((m) => m.team_name === team && m.uid === uid)) {
+      setMappingMsg(`\u2139\ufe0f Mapping ${team} \u2014 ${uid} sudah ada.`);
+      return;
+    }
+    const { error } = await supabase.from("team_mappings").insert({ team_name: team, uid });
+    if (error) {
+      setMappingMsg(`\u26a0\ufe0f Gagal menambah: ${error.message}`);
+      return;
+    }
+    setMappingTeam("");
+    setMappingUid("");
+    setMappingMsg(`\u2705 ${team} \u2014 ${uid} tersimpan.`);
+    await fetchMappings();
+  };
+
+  const deleteMapping = async (team: string, uid: string) => {
+    if (!supabase) return;
+    const { error } = await supabase
+      .from("team_mappings")
+      .delete()
+      .eq("team_name", team)
+      .eq("uid", uid);
+    if (error) {
+      setMappingMsg(`\u26a0\ufe0f Gagal menghapus: ${error.message}`);
+      return;
+    }
+    setMappingMsg(`\u{1F5D1}\uFE0F ${team} \u2014 ${uid} dihapus.`);
+    await fetchMappings();
   };
 
   const handleSendLiveData = () => {
@@ -694,6 +785,83 @@ export default function ControlPanel() {
           {overlayDb && (
             <p className="text-xs rounded-lg px-3 py-1.5 border text-neutral-300 bg-neutral-950 border-neutral-800">
               {overlayDb}
+            </p>
+          )}
+        </div>
+
+        {/* Team Mapping Section */}
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 space-y-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-300">
+            8. Team Mapping (ID Perwakilan per Nama Team)
+          </h2>
+          <p className="text-xs text-neutral-400">
+            Satu baris = satu <code className="text-amber-300">uid</code> pemain perwakilan untuk satu nama team.
+            Dipakai untuk nama tim otomatis biru/merah, skor series, dan nama file{" "}
+            <code className="text-amber-300">historyMatch</code>. UID bisa disalin dari live data (kolom{" "}
+            <code className="text-amber-300">id</code> pemain).
+          </p>
+          {mappings.length === 0 ? (
+            <p className="text-xs text-neutral-500 bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2">
+              Belum ada mapping — tambahkan minimal 1 uid perwakilan untuk tiap team yang bertanding.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {mappings.map((m) => (
+                <li
+                  key={`${m.team_name}::${m.uid}`}
+                  className="flex items-center justify-between gap-3 bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs"
+                >
+                  <span className="min-w-0">
+                    <span className="font-bold text-amber-300">{m.team_name}</span>
+                    <span className="text-neutral-500"> — </span>
+                    <span className="font-mono text-neutral-200">{m.uid}</span>
+                  </span>
+                  <button
+                    onClick={() => void deleteMapping(m.team_name, m.uid)}
+                    className="shrink-0 px-3 py-1 bg-red-950/60 hover:bg-red-900/60 border border-red-800 text-red-200 font-bold rounded-lg transition"
+                  >
+                    Hapus
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="grid grid-cols-2 gap-3">
+            <label className="text-xs text-neutral-400 space-y-1">
+              <span>Nama Team</span>
+              <input
+                value={mappingTeam}
+                onChange={(e) => setMappingTeam(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void addMapping();
+                }}
+                placeholder="mis. RRQ Hoshi"
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-2 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-amber-500"
+              />
+            </label>
+            <label className="text-xs text-neutral-400 space-y-1">
+              <span>UID Perwakilan</span>
+              <input
+                value={mappingUid}
+                onChange={(e) => setMappingUid(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void addMapping();
+                }}
+                placeholder="mis. 2178663653"
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-2 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-amber-500"
+              />
+            </label>
+          </div>
+          <button
+            onClick={() => void addMapping()}
+            className="w-full py-3 px-4 rounded-lg font-bold text-sm border transition flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-black"
+          >
+            <span>➕</span>
+            <span>Tambah Mapping</span>
+          </button>
+          {mappingMsg && (
+            <p className="text-xs rounded-lg px-3 py-1.5 border text-neutral-300 bg-neutral-950 border-neutral-800">
+              {mappingMsg}
             </p>
           )}
         </div>

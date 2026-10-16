@@ -16,6 +16,13 @@ function findPlayer(players: any[], ipos: number) {
   );
   if (exact) return exact;
 
+  // Data sudah ber-ipos (kasus normal, mis. draft parsial hanya 2 pemain):
+  // JANGAN tebak via index — slot yang belum ada datanya harus kosong (null),
+  // bukan diisi pemain dari slot lain (menyebabkan 1 pemain tampil 2x).
+  const hasIpos = players.some((p: any) => Number(p?.ipos) > 0);
+  if (hasIpos) return null;
+
+  // Fallback index hanya untuk data legacy tanpa ipos sama sekali.
   const bluePlayers = players.filter((p: any) => Number(p?.team) === 1);
   const redPlayers = players.filter((p: any) => Number(p?.team) === 2);
 

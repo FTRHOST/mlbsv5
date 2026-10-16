@@ -5,6 +5,7 @@ import type {
   KillTrigger,
 } from "../types/kill.js";
 import { debugLog } from "../utils/logger.js";
+import { debugSend } from "../utils/telemetry-debug.js";
 import { getMatchTimeMs } from "./match.js";
 import { describeFighter, lookupFighterByGuid } from "./player.js";
 
@@ -239,6 +240,6 @@ function onKillEvent(args: any): void {
       eventType,
       t,
     };
-    send(JSON.stringify({ type: "mlbb_kill_event", event }));
+    debugSend(JSON.stringify({ type: "mlbb_kill_event", event }));
   } catch (e) {}
 }

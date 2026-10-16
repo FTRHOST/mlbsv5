@@ -1,2 +1,5 @@
 node_modules/
 .env
+# Artefak runtime: history pertandingan (ditulis server.py, dibaca Endmatch).
+public/historyMatch/
+dist/historyMatch/

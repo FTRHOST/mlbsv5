@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, createContext, useContext } from "react";
 import { motion } from "motion/react";
 import { useRoomData } from "../../hooks/useRoomData";
+import { useLastMatchHistory } from "../../hooks/useMatchHistory";
 import { useMatchScore } from "../../hooks/useMatchScore";
 import { useDisplayTeamNames } from "../../hooks/useTeamNames";
 import UserAvatar from "../../components/UserAvatar";
@@ -11,6 +12,17 @@ import iconTurret from "./turret0.svg";
 import iconLord from "./lord0.svg";
 import iconTurtle from "./turtle0.svg";
 
+// ─── Sumber data Endmatch: index TERAKHIR historyMatch (frozen hasil match
+// yang sudah selesai), fallback ke live room data bila history belum ada.
+// Diprovide via context agar semua sub-komponen (rows, stats) konsisten.
+const EndmatchDataContext = createContext<any>(null);
+
+function useEndmatchData() {
+  const live = useRoomData();
+  const ctx = useContext(EndmatchDataContext);
+  return ctx ?? live;
+}
+
 // ─── Helpers data (mengikuti pola Inmatch: ipos 1-5 biru, 6-10 merah) ───
 
 function findPlayer(players: any[], ipos: number) {
@@ -19,6 +31,11 @@ function findPlayer(players: any[], ipos: number) {
     (p: any) => Number(p?.ipos) === ipos && Number(p?.ipos) > 0,
   );
   if (exact) return exact;
+  // Data sudah ber-ipos (kasus normal): jangan tebak via index agar
+  // 1 pemain tidak tampil 2x saat payload parsial.
+  const hasIpos = players.some((p: any) => Number(p?.ipos) > 0);
+  if (hasIpos) return null;
+  // Fallback index hanya untuk data legacy tanpa ipos sama sekali.
   const bluePlayers = players.filter((p: any) => Number(p?.team) === 1);
   const redPlayers = players.filter((p: any) => Number(p?.team) === 2);
   if (ipos <= 5 && bluePlayers.length > 0) return bluePlayers[ipos - 1] || null;
@@ -143,7 +160,7 @@ type RowData = {
 };
 
 function usePlayerRow(ipos: number): RowData {
-  const roomData = useRoomData();
+  const roomData = useEndmatchData();
   const players = Array.isArray(roomData?.players) ? roomData.players : [];
   const p = findPlayer(players, ipos);
   const rawEquips: number[] = Array.isArray(p?.equips)
@@ -424,7 +441,7 @@ function DiffRow({
 }
 
 function StatsDiffEnd() {
-  const roomData = useRoomData();
+  const roomData = useEndmatchData();
   const battle = roomData?.battle ?? roomData?.Battle ?? {};
   const num = (v: unknown) =>
     typeof v === "number" && !Number.isNaN(v) ? v : 0;
@@ -507,16 +524,28 @@ function StatsDiffEnd() {
 // ─── Halaman utama ───
 
 export default function Endmatch() {
-  const roomData = useRoomData();
+  const liveRoomData = useRoomData();
+  const { entry: historyEntry } = useLastMatchHistory();
+  // Endmatch cukup membaca index TERAKHIR history (hasil final, frozen).
+  // Fallback ke live bila history belum ada (mis. testing tanpa server.py).
+  const roomData = historyEntry?.data ?? liveRoomData;
   const teamNames = useDisplayTeamNames();
-  const blueName = teamNames.blue || roomData?.blue_team_name || "BLUE TEAM";
-  const redName = teamNames.red || roomData?.red_team_name || "RED TEAM";
-  const matchScore = useMatchScore(
-    teamNames.blue || roomData?.blue_team_name,
-    teamNames.red || roomData?.red_team_name,
-  );
+  const blueName =
+    historyEntry?.blueTeam ||
+    teamNames.blue ||
+    roomData?.blue_team_name ||
+    "BLUE TEAM";
+  const redName =
+    historyEntry?.redTeam ||
+    teamNames.red ||
+    roomData?.red_team_name ||
+    "RED TEAM";
+  const matchScore = useMatchScore(blueName, redName);
 
   const battle = roomData?.battle ?? roomData?.Battle ?? {};
+  // Kotak skor "00" = TOTAL KILL tim (bukan skor series).
+  const blueTotalKill = padScore(battle.blueTeamKill);
+  const redTotalKill = padScore(battle.redTeamKill);
   const winCamp = Number(battle.winCamp);
   const blueWin =
     matchScore.blueScore > matchScore.redScore ||
@@ -530,6 +559,7 @@ export default function Endmatch() {
     winCamp === 2;
 
   return (
+    <EndmatchDataContext.Provider value={roomData}>
     <div
       className="relative size-full overflow-hidden"
       data-name="match-report"
@@ -588,7 +618,7 @@ export default function Endmatch() {
               data-name="map-draw-name"
             >
               <p className="leading-none m-0">
-                {padScore(matchScore.blueScore)}
+                {blueTotalKill}
               </p>
             </div>
           </div>
@@ -612,7 +642,7 @@ export default function Endmatch() {
               data-name="map-draw-name"
             >
               <p className="leading-none m-0">
-                {padScore(matchScore.redScore)}
+                {redTotalKill}
               </p>
             </div>
           </div>
@@ -671,5 +701,6 @@ export default function Endmatch() {
         </div>
       </div>
     </div>
+    </EndmatchDataContext.Provider>
   );
 }

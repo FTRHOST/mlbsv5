@@ -7,7 +7,8 @@
     "wait-and-hook": "while [ -z $(adb shell ps -A | grep ':UnityKillsMe' | awk '{print $2}') ]; do sleep 1; done; PID=$(adb shell ps -A | grep ':UnityKillsMe' | awk '{print $2}'); echo 'PID Found: ' $PID; frida -U -p $PID -l dist/agent.js",
     "watch": "frida-compile src/index.ts -o dist/agent.js -w",
     "build": "mkdir -p dist && frida-compile src/index.ts -o dist/agent.js -c",
-    "server": "python3 server.py"
+    "server": "python3 server.py",
+    "server:debug": "python3 server.py --debug"
   },
   "author": "",
   "license": "ISC",

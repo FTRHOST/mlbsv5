@@ -3,9 +3,11 @@ import { useState, useEffect, useRef } from "react";
 import {
   useRoomData,
   KILL_EVENT_CHANNEL,
+  BOSS_EVENT_CHANNEL,
   getKillEventLabel,
+  getBossEventLabel,
 } from "../../hooks/useRoomData";
-import type { MlbbKillEvent } from "../../hooks/useRoomData";
+import type { MlbbKillEvent, MlbbBossEvent } from "../../hooks/useRoomData";
 import { useDisplayTeamNames } from "../../hooks/useTeamNames";
 import { useMatchScore } from "../../hooks/useMatchScore";
 import {
@@ -1257,6 +1259,12 @@ function findPlayer(players: any[], ipos: number) {
   );
   if (exact) return exact;
 
+  // Data sudah ber-ipos (kasus normal): jangan tebak via index agar
+  // 1 pemain tidak tampil 2x saat payload parsial (mis. fase draft).
+  const hasIpos = players.some((p: any) => Number(p?.ipos) > 0);
+  if (hasIpos) return null;
+
+  // Fallback index hanya untuk data legacy tanpa ipos sama sekali.
   const bluePlayers = players.filter((p: any) => Number(p?.team) === 1);
   const redPlayers = players.filter((p: any) => Number(p?.team) === 2);
 
@@ -6256,6 +6264,37 @@ function getKillEventKey(event: MlbbKillEvent): string {
   return `${event.t ?? "-"}-${k.guid ?? "-"}-${d.guid ?? "-"}-${event.multKill ?? "-"}-${event.firstBlood ? "fb" : ""}`;
 }
 
+/**
+ * Map a live mlbb_boss_event (ReportKillBossEvent) to overlay data.
+ * Memakai overlay .infokill yang sama seperti notifikasi kill:
+ * label "TURTLE SLAIN" / "LORD SLAIN" (atau "... STOLEN" bila steal),
+ * nama + foto killer yang menghabisi boss.
+ */
+function mapBossEventToInfoKill(
+  event: MlbbBossEvent | null | undefined,
+): InfoKillData | null {
+  if (!event) return null;
+  const killLabel = getBossEventLabel(event);
+  if (!killLabel) return null;
+  const killer = event.killer || {};
+  const rawName = typeof killer.name === "string" ? killer.name : "";
+  const playerName =
+    rawName || (Number(killer.ipos) > 0 ? `Player ${killer.ipos}` : "NAMA");
+  const heroId = Number(killer.heroid) || 0;
+  const rawUid =
+    (killer as { accId?: unknown; id?: unknown }).accId ??
+    (killer as { accId?: unknown; id?: unknown }).id ??
+    "";
+  const userId = String(rawUid ?? "").trim();
+  return { playerName, killLabel, heroId, userId: userId || undefined };
+}
+
+function getBossEventKey(event: MlbbBossEvent): string {
+  const k = event.killer || {};
+  const d = event.deader || {};
+  return `boss-${event.t ?? "-"}-${k.guid ?? "-"}-${d.guid ?? "-"}-${event.eventType ?? "-"}-${event.steal ? "steal" : ""}`;
+}
+
 const INFOKILL_LABELS = [
   "FIRST BLOOD",
   "DOUBLE KILL",
@@ -8039,6 +8078,45 @@ export default function Inmatch() {
       window.removeEventListener("mlbs_kill_event", handleCustom);
       // Cleanup timer hide hanya saat unmount (effect ini mount sekali).
       if (infoKillTimeout.current) clearTimeout(infoKillTimeout.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto trigger InfoKill dari live mlbb_boss_event / ReportKillBossEvent
+  // (overlay .infokill yang sama seperti notifikasi kill, tampil 3 detik).
+  const lastBossKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    const handleBossEvent = (event: MlbbBossEvent | null | undefined) => {
+      if (!event) return;
+      const key = getBossEventKey(event);
+      if (lastBossKeyRef.current === key) return;
+      lastBossKeyRef.current = key;
+      const data = mapBossEventToInfoKill(event);
+      if (data) showInfoKillFor3s({ ...data, key });
+    };
+
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel(BOSS_EVENT_CHANNEL);
+      bc.onmessage = (e) => {
+        const evt = e.data?.event ?? e.data;
+        handleBossEvent(evt as MlbbBossEvent);
+      };
+    } catch {
+      bc = null;
+    }
+    const handleCustom = (e: Event) => {
+      handleBossEvent((e as CustomEvent).detail as MlbbBossEvent);
+    };
+    window.addEventListener("mlbs_boss_event", handleCustom);
+
+    return () => {
+      try {
+        bc?.close();
+      } catch {
+        /* noop */
+      }
+      window.removeEventListener("mlbs_boss_event", handleCustom);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

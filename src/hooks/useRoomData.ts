@@ -293,16 +293,176 @@ export function getKillEventLabel(event: MlbbKillEvent | null | undefined): stri
   return null;
 }
 
+export interface MlbbBossEvent {
+  killer?: MlbbKillParticipant | null;
+  deader?: MlbbKillParticipant | null;
+  deaderClass?: string;
+  bossKind?: string;
+  eventType?: number;
+  steal?: boolean;
+  t?: number;
+}
+
+/**
+ * Parser for MLBB boss event packets (mlbb_boss_event, dari hook
+ * CompetitionData::ReportKillBossEvent). Format wrapper sama seperti kill event.
+ * Returns the inner `event` object or null.
+ */
+export function parseMlbbBossEvent(rawMessage: any): MlbbBossEvent | null {
+  const extractBossEvent = (obj: any): MlbbBossEvent | null => {
+    if (!obj || typeof obj !== 'object') return null;
+
+    if (obj.type === 'mlbb_boss_event' && obj.event && typeof obj.event === 'object') {
+      const inner = obj.event;
+      if (typeof inner.payload === 'string') {
+        const sub = parseMlbbBossEvent(inner.payload);
+        if (sub) return sub;
+      }
+      return inner;
+    }
+
+    if (obj.type === 'send' && obj.payload) {
+      if (typeof obj.payload === 'string') {
+        const sub = parseMlbbBossEvent(obj.payload);
+        if (sub) return sub;
+      } else if (typeof obj.payload === 'object') {
+        const sub = extractBossEvent(obj.payload);
+        if (sub) return sub;
+      }
+    }
+
+    // Direct event object (punya bossKind).
+    if (obj.bossKind !== undefined && (obj.killer || obj.deader)) {
+      return obj as MlbbBossEvent;
+    }
+
+    return null;
+  };
+
+  if (typeof rawMessage === 'object') {
+    return extractBossEvent(rawMessage);
+  }
+
+  if (typeof rawMessage === 'string') {
+    let str = rawMessage.trim();
+
+    for (let depth = 0; depth < 3; depth++) {
+      if (str.startsWith('"') && str.endsWith('"')) {
+        try {
+          const unwrapped = JSON.parse(str);
+          if (typeof unwrapped === 'string') {
+            str = unwrapped.trim();
+          } else if (typeof unwrapped === 'object') {
+            const found = extractBossEvent(unwrapped);
+            if (found) return found;
+            break;
+          }
+        } catch (e) {
+          break;
+        }
+      }
+    }
+
+    if (str.startsWith('message:')) {
+      str = str.substring('message:'.length).trim();
+    }
+    const dataSuffixIdx = str.lastIndexOf(' data:');
+    if (dataSuffixIdx !== -1) {
+      str = str.substring(0, dataSuffixIdx).trim();
+    }
+
+    try {
+      const parsed = JSON.parse(str);
+      const found = extractBossEvent(parsed);
+      if (found) return found;
+    } catch (e) {}
+
+    const matchBoss = str.match(/\{"type"\s*:\s*"mlbb_boss_event"[\s\S]*\}/);
+    if (matchBoss) {
+      try {
+        const parsed = JSON.parse(matchBoss[0]);
+        const found = extractBossEvent(parsed);
+        if (found) return found;
+      } catch (e) {}
+    }
+
+    try {
+      let py = str
+        .replace(/\bNone\b/g, 'null')
+        .replace(/\bTrue\b/g, 'true')
+        .replace(/\bFalse\b/g, 'false');
+
+      py = py.replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, (_m, p1) => {
+        const inner = p1.replace(/"/g, '\\"');
+        return `"${inner}"`;
+      });
+
+      const parsed = JSON.parse(py);
+      const found = extractBossEvent(parsed);
+      if (found) return found;
+    } catch (e) {}
+  }
+
+  return null;
+}
+
+export const BOSS_EVENT_CHANNEL = 'mlbs_boss_event';
+
+/**
+ * Forward a parsed boss event to all overlay tabs (Inmatch auto-subscribes).
+ */
+export function broadcastBossEvent(event: MlbbBossEvent) {
+  try {
+    if (typeof BroadcastChannel !== 'undefined') {
+      const bc = new BroadcastChannel(BOSS_EVENT_CHANNEL);
+      bc.postMessage({ type: 'BOSS_EVENT', event });
+      bc.close();
+    }
+  } catch (e) {
+    console.warn('Boss event BroadcastChannel error:', e);
+  }
+
+  try {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('mlbs_boss_event', { detail: event })
+      );
+    }
+  } catch (e) {
+    console.warn('Boss event CustomEvent error:', e);
+  }
+}
+
+/**
+ * Map a boss event to its overlay label (seperti getKillEventLabel).
+ * Selalu tampil (boss kill jarang): "TURTLE SLAIN" / "LORD SLAIN",
+ * varian curi: "TURTLE STOLEN" / "LORD STOLEN".
+ */
+export function getBossEventLabel(event: MlbbBossEvent | null | undefined): string | null {
+  if (!event) return null;
+  const kind =
+    event.bossKind === 'lord' ? 'LORD' :
+    event.bossKind === 'turtle' ? 'TURTLE' : 'BOSS';
+  return event.steal === true ? `${kind} STOLEN` : `${kind} SLAIN`;
+}
+
 /**
  * Update real-time live data directly in local state (0 latency / no DB write required).
- * Kill events (mlbb_kill_event) are forwarded to the kill channel instead of
- * being merged into room data. Returns 'kill' | 'live' | null.
+ * Kill events (mlbb_kill_event) and boss events (mlbb_boss_event) are forwarded
+ * to their channels instead of being merged into room data.
+ * Returns 'kill' | 'boss' | 'live' | null.
  */
-export function updateLocalLiveData(rawMessage: any): 'kill' | 'live' | null {
+export function updateLocalLiveData(rawMessage: any): 'kill' | 'boss' | 'live' | null {
   const killEvent = parseMlbbKillEvent(rawMessage);
   if (killEvent) {
     broadcastKillEvent(killEvent);
     return 'kill';
+  }
+
+  const bossEvent = parseMlbbBossEvent(rawMessage);
+  if (bossEvent) {
+    broadcastBossEvent(bossEvent);
+    return 'boss';
   }
 
   const livePayload = parseMlbbLiveData(rawMessage);

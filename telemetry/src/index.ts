@@ -1,4 +1,5 @@
 import { startStealthBootstrap, type MappedClasses } from "./core/loader.js";
+import { setupBossHook } from "./hooks/boss.js";
 import { setupDeathHook } from "./hooks/death.js";
 import { setupDraftHooks } from "./hooks/draft.js";
 import { setupKillHook } from "./hooks/kill.js";
@@ -9,9 +10,35 @@ import { setupPickHooks } from "./hooks/pick.js";
 import { setupPlayerHooks } from "./hooks/player.js";
 import { setupVersionHook } from "./hooks/version.js";
 import { debugLog } from "./utils/logger.js";
+import {
+  getTelemetryDebugStats,
+  isTelemetryDebugEnabled,
+  setTelemetryDebugEnabled,
+} from "./utils/telemetry-debug.js";
 import { startTelemetryBroadcaster } from "./utils/scheduler.js";
 
 debugLog("Bootstrap", "Memulai Frida Il2Cpp Stealth Agent...");
+debugLog(
+  "Bootstrap",
+  `Telemetry debug mode: ${isTelemetryDebugEnabled() ? "ON ✅ (semua payload dicatat)" : "OFF (aktifkan via rpc.exports.setTelemetryDebug(true))"}`,
+);
+
+// RPC toggle agar debug bisa dinyalakan tanpa rebuild dari Frida CLI:
+//   agent.exports.setTelemetryDebug(true)
+try {
+  (rpc as any).exports = {
+    setTelemetryDebug(v: boolean) {
+      setTelemetryDebugEnabled(!!v);
+      return isTelemetryDebugEnabled();
+    },
+    isTelemetryDebug() {
+      return isTelemetryDebugEnabled();
+    },
+    getTelemetryDebugStats() {
+      return getTelemetryDebugStats();
+    },
+  };
+} catch (e) {}
 
 startStealthBootstrap((classes: MappedClasses) => {
   setupDraftHooks(classes.kUIRankHero);
@@ -20,6 +47,7 @@ startStealthBootstrap((classes: MappedClasses) => {
   setupObjectiveHook(classes.kLogicManager, classes.kTortoise, classes.kBoss);
   setupMatchHooks(classes.kEndCtrl, classes.kTimerBase, classes.kLogicFightData, classes.kLogicManager);
   setupKillHook(classes.kCompetitionData, classes.kLogicManager);
+  setupBossHook(classes.kCompetitionData, classes.kTortoise, classes.kBoss);
   setupPickHooks(classes.kCompetitionData);
   setupMapDrawHook(classes.kLogicManager);
   setupPlayerHooks({

@@ -1,4 +1,4 @@
-import { useRoomData, updateLocalLiveData, parseMlbbLiveData, parseMlbbKillEvent, getKillEventLabel } from './useRoomData';
+import { useRoomData, updateLocalLiveData, parseMlbbLiveData, parseMlbbKillEvent, getKillEventLabel, parseMlbbBossEvent, getBossEventLabel } from './useRoomData';
 
 /**
  * Broadcast local live data to all open tabs and local listeners on the machine
@@ -40,6 +40,18 @@ export function sendKillEvent(dataMessage: any): string | null {
   if (!event) return null;
   updateLocalLiveData(dataMessage);
   return getKillEventLabel(event) || 'skipped';
+}
+
+/**
+ * Send a raw mlbb_boss_event packet (ReportKillBossEvent).
+ * Returns the overlay label when the event should display,
+ * or null when the payload cannot be parsed.
+ */
+export function sendBossEvent(dataMessage: any): string | null {
+  const event = parseMlbbBossEvent(dataMessage);
+  if (!event) return null;
+  updateLocalLiveData(dataMessage);
+  return getBossEventLabel(event);
 }
 
 /**

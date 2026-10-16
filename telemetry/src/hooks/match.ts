@@ -1,6 +1,7 @@
 import { getCachedUtf8String, getOffset, il2cppApi } from "../core/api.js";
 import type { BattleData } from "../types/match.js";
 import { debugLog } from "../utils/logger.js";
+import { debugSend } from "../utils/telemetry-debug.js";
 import { isTurtleAlive, isLordAlive, refreshObjectives } from "./objective.js";
 import { getVersionInGame } from "./version.js";
 
@@ -44,7 +45,7 @@ export function setupMatchHooks(
                   let winner = failCamp === 1 ? 2 : 1;
                   currentWinCamp = winner;
                   debugLog("Match", `[WinLog] Team yang menang: ${winner} (1:Blue, 2:Red)`);
-                  send(
+                  debugSend(
                     JSON.stringify({
                       type: "auto_match_result",
                       winnerCamp: winner,

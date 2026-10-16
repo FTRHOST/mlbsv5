@@ -7,6 +7,7 @@ import { resetPickState } from "../hooks/pick.js";
 import { extractPlayerData } from "../hooks/player.js";
 import type { TelemetryPayload } from "../types/telemetry.js";
 import { debugLog } from "./logger.js";
+import { debugSend } from "./telemetry-debug.js";
 
 let lastGameState = 0;
 const persistentInstPtr = Memory.alloc(Process.pointerSize);
@@ -88,7 +89,7 @@ export function startTelemetryBroadcaster(classes: MappedClasses): void {
         Battle: battleData,
       };
 
-      send(JSON.stringify({ type: "mlbb_live_data", payload: payload }));
+      debugSend(JSON.stringify({ type: "mlbb_live_data", payload: payload }));
     } catch (e) {}
 
     // Interval jitter: 1000ms ± 50ms (950ms - 1050ms) to bypass fixed-interval polling detection
