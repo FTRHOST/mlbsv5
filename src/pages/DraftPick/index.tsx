@@ -6,6 +6,7 @@ import { useMatchScore } from "../../hooks/useMatchScore";
 import { useDisplayTeamNames } from "../../hooks/useTeamNames";
 import UserAvatar from "../../components/UserAvatar";
 import { useHeroStats } from "../../hooks/useHeroStats";
+import { parseDraftPhase } from "./draftPhase";
 
 const DraftContext = createContext<any>({});
 
@@ -475,7 +476,7 @@ function MidSection() {
   const timeLeft = useDraftTimer();
   const data = useContext(DraftContext);
   const mapDraw = data?.mapDraw || 2;
-  const draftPhase = data?.draftPhase || 1;
+  const { label: phaseText } = parseDraftPhase(data?.draftPhase);
 
   let mapText = "DANGEREOUS GRASS";
   if (mapDraw === 1) mapText = "BROKEN WALLS";
@@ -486,11 +487,6 @@ function MidSection() {
   if (mapDraw === 12) mapText = "VISION REVEAL";
   if (mapDraw === 15) mapText = "HEALING TURTLE";
   if (mapDraw === 16) mapText = "GOLDEN TURET";
-
-  let phaseText = "BANNING";
-  if (draftPhase >= 1 && draftPhase <= 3) phaseText = "BANNING";
-  else if (draftPhase >= 4 && draftPhase <= 6) phaseText = "PICKING";
-  else if (draftPhase === 7) phaseText = "PREPARATION";
 
   return (
     <div
@@ -677,8 +673,7 @@ function DraftpickSection() {
 function BlueTeamContainer() {
   const data = useContext(DraftContext);
   const teamName = data?.blue_team_name || data?.blueTeamName || "BLUE TEAM";
-  const draftPhase = data?.draftPhase || 0;
-  const isBlueTurn = [1, 3, 4, 6, 7].includes(draftPhase);
+  const { blueTurn: isBlueTurn } = parseDraftPhase(data?.draftPhase);
 
   return (
     <motion.div
@@ -1074,8 +1069,7 @@ function Menu() {
 function RedTeamContainer() {
   const data = useContext(DraftContext);
   const teamName = data?.red_team_name || data?.redTeamName || "RED TEAM";
-  const draftPhase = data?.draftPhase || 0;
-  const isRedTurn = [2, 3, 5, 6, 7].includes(draftPhase);
+  const { redTurn: isRedTurn } = parseDraftPhase(data?.draftPhase);
 
   return (
     <motion.div
