@@ -46,7 +46,7 @@ LOG = logging.getLogger("auto_scene")
 # gameState -> (nama scene OBS, nama transisi OBS). Nama bersifat case-sensitive
 # mengikuti scene_order di obs-source/intechfest.json.
 SCENE_MAP: dict[int, tuple[str, str]] = {
-    3: ("mapdraw", "Stinger"),
+    3: ("mapdraw", "Fade"),
     5: ("draft-loading", "Stinger"),
     6: ("match", "Stinger"),
     7: ("victory", "Move"),
