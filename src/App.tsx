@@ -123,14 +123,20 @@ function EndmatchScreen() {
   );
 }
 
-/* ─── Inmatch screen — slide up + fade entrance once (overlay transparan) ─── */
+/* ─── Inmatch screen — tunda 15 dtk lalu fade entrance (overlay transparan) ─── */
+const INMATCH_ENTRANCE_DELAY = 15;
+
 function InmatchScreen() {
   return (
     <motion.div
       className="relative w-full h-full bg-transparent"
-      initial={{ opacity: 0, y: 60 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{
+        duration: 1.2,
+        delay: INMATCH_ENTRANCE_DELAY,
+        ease: "easeOut",
+      }}
     >
       <Inmatch />
     </motion.div>

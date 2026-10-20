@@ -1,7 +1,7 @@
 {
   "type": "mlbb_live_data",
   "payload": {
-    "gameState": 6,
+    "gameState": 3,
     "draftPhase": "BANNING",
     "draftTimer": 5,
     "mapDraw": 4,
